@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,7 +43,7 @@ const (
 	DefaultEtcdSecretName = "model-serving-etcd"
 
 	ConfigType        = "yaml"
-	MountLocation     = "/etc/model-serving/config-defaults.yaml"
+	MountLocation     = "/etc/model-serving/config/default"
 	ViperKeyDelimiter = "::"
 )
 
@@ -341,7 +341,7 @@ func defaults(v *viper.Viper) {
 	// default size 16MiB in bytes
 	v.SetDefault("GrpcMaxMessageSizeBytes", 16777216)
 	v.SetDefault("BuiltInServerTypes", []string{
-		string(kserveapi.MLServer), string(kserveapi.Triton), string(kserveapi.OVMS),
+		string(kserveapi.MLServer), string(kserveapi.Triton), string(kserveapi.OVMS), "torchserve",
 	})
 }
 
