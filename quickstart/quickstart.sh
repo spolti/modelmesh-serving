@@ -30,6 +30,12 @@ MODELMESH_PROJECT=${1:-"opendatahub"}
 INFERENCE_SERVICE_PROJECT=${2:-"mesh-test"}
 
 oc new-project $MODELMESH_PROJECT
+ETC_ROOT_PSW=$(openssl rand -hex 32)
+sed -i "s/<etcd_password>/${ETC_ROOT_PSW}/g" etcd-secrets.yaml
+sed -i "s/<etcd_password>/${ETC_ROOT_PSW}/g" etcd-users.yaml
+sed -i "s/<namespace>/${MODELMESH_PROJECT}/g" ../manifests/kfdef.yaml
+oc apply -f etcd-secrets.yaml -n $MODELMESH_PROJECT
+oc apply -f etcd-users.yaml -n $MODELMESH_PROJECT
 oc apply -f ../manifests/kfdef.yaml -n $MODELMESH_PROJECT
 
 oc new-project $INFERENCE_SERVICE_PROJECT
@@ -43,6 +49,5 @@ oc::wait::object::availability "oc get crd servingruntimes.serving.kserve.io" 5 
 oc apply -f sample-minio.yaml -n $INFERENCE_SERVICE_PROJECT
 oc apply -f openvino-inference-service.yaml -n $INFERENCE_SERVICE_PROJECT
 oc apply -f openvino-serving-runtime.yaml -n $INFERENCE_SERVICE_PROJECT
-
 
 oc apply -f service_account.yaml -n $INFERENCE_SERVICE_PROJECT

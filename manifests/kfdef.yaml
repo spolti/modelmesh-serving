@@ -12,7 +12,7 @@ spec:
     - kustomizeConfig:
         parameters:
         - name: monitoring-namespace
-          value: opendatahub
+          value: <namespace>
         overlays:
           - odh-model-controller
         repoRef:
