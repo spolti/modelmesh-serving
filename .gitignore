@@ -1,5 +1,6 @@
 # general
 .env
+.DS_Store
 
 public/
 target/
