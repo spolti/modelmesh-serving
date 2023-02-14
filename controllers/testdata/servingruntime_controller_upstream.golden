@@ -94,58 +94,6 @@ spec:
         - mountPath: /storage-config
           name: storage-config
           readOnly: true
-      - args:
-        - --https-address=:8443
-        - --provider=openshift
-        - --openshift-service-account=modelmesh-serving-sa
-        - --upstream=http://localhost:8008
-        - --tls-cert=/etc/tls/private/tls.crt
-        - --tls-key=/etc/tls/private/tls.key
-        - --cookie-secret=SECRET
-        - '--openshift-delegate-urls={"/": {"namespace": "default", "resource": "services",
-          "verb": "get"}}'
-        - '--openshift-sar={"namespace": "default", "resource": "services", "verb":
-          "get"}'
-        - --skip-auth-regex='(^/metrics|^/apis/v1beta1/healthz)'
-        image: registry.redhat.io/openshift4/ose-oauth-proxy:v4.8
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        name: oauth-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        resources:
-          limits:
-            cpu: 100m
-            memory: 256Mi
-          requests:
-            cpu: 100m
-            memory: 256Mi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /etc/tls/private
-          name: proxy-tls
       - env:
         - name: MLSERVER_MODELS_DIR
           value: /models/_mlserver_models/
@@ -287,14 +235,8 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      serviceAccount: modelmesh-serving-sa
-      serviceAccountName: modelmesh-serving-sa
       terminationGracePeriodSeconds: 90
       volumes:
-      - name: proxy-tls
-        secret:
-          defaultMode: 420
-          secretName: model-serving-proxy-tls
       - emptyDir:
           sizeLimit: 1536Mi
         name: models-dir
@@ -375,58 +317,6 @@ spec:
             memory: 96Mi
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
-      - args:
-        - --https-address=:8443
-        - --provider=openshift
-        - --openshift-service-account=modelmesh-serving-sa
-        - --upstream=http://localhost:8008
-        - --tls-cert=/etc/tls/private/tls.crt
-        - --tls-key=/etc/tls/private/tls.key
-        - --cookie-secret=SECRET
-        - '--openshift-delegate-urls={"/": {"namespace": "default", "resource": "services",
-          "verb": "get"}}'
-        - '--openshift-sar={"namespace": "default", "resource": "services", "verb":
-          "get"}'
-        - --skip-auth-regex='(^/metrics|^/apis/v1beta1/healthz)'
-        image: registry.redhat.io/openshift4/ose-oauth-proxy:v4.8
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        name: oauth-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        resources:
-          limits:
-            cpu: 100m
-            memory: 256Mi
-          requests:
-            cpu: 100m
-            memory: 256Mi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /etc/tls/private
-          name: proxy-tls
       - env:
         - name: MLSERVER_MODELS_DIR
           value: /models/_mlserver_models/
@@ -616,14 +506,8 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      serviceAccount: modelmesh-serving-sa
-      serviceAccountName: modelmesh-serving-sa
       terminationGracePeriodSeconds: 90
       volumes:
-      - name: proxy-tls
-        secret:
-          defaultMode: 420
-          secretName: model-serving-proxy-tls
       - emptyDir:
           sizeLimit: 1536Mi
         name: models-dir
@@ -730,58 +614,6 @@ spec:
         - mountPath: /storage-config
           name: storage-config
           readOnly: true
-      - args:
-        - --https-address=:8443
-        - --provider=openshift
-        - --openshift-service-account=modelmesh-serving-sa
-        - --upstream=http://localhost:8008
-        - --tls-cert=/etc/tls/private/tls.crt
-        - --tls-key=/etc/tls/private/tls.key
-        - --cookie-secret=SECRET
-        - '--openshift-delegate-urls={"/": {"namespace": "default", "resource": "services",
-          "verb": "get"}}'
-        - '--openshift-sar={"namespace": "default", "resource": "services", "verb":
-          "get"}'
-        - --skip-auth-regex='(^/metrics|^/apis/v1beta1/healthz)'
-        image: registry.redhat.io/openshift4/ose-oauth-proxy:v4.8
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        name: oauth-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        resources:
-          limits:
-            cpu: 100m
-            memory: 256Mi
-          requests:
-            cpu: 100m
-            memory: 256Mi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /etc/tls/private
-          name: proxy-tls
       - env:
         - name: MLSERVER_MODELS_DIR
           value: /models/_mlserver_models/
@@ -920,14 +752,8 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      serviceAccount: modelmesh-serving-sa
-      serviceAccountName: modelmesh-serving-sa
       terminationGracePeriodSeconds: 90
       volumes:
-      - name: proxy-tls
-        secret:
-          defaultMode: 420
-          secretName: model-serving-proxy-tls
       - emptyDir:
           sizeLimit: 1536Mi
         name: models-dir
@@ -1034,58 +860,6 @@ spec:
         - mountPath: /storage-config
           name: storage-config
           readOnly: true
-      - args:
-        - --https-address=:8443
-        - --provider=openshift
-        - --openshift-service-account=modelmesh-serving-sa
-        - --upstream=http://localhost:8008
-        - --tls-cert=/etc/tls/private/tls.crt
-        - --tls-key=/etc/tls/private/tls.key
-        - --cookie-secret=SECRET
-        - '--openshift-delegate-urls={"/": {"namespace": "default", "resource": "services",
-          "verb": "get"}}'
-        - '--openshift-sar={"namespace": "default", "resource": "services", "verb":
-          "get"}'
-        - --skip-auth-regex='(^/metrics|^/apis/v1beta1/healthz)'
-        image: registry.redhat.io/openshift4/ose-oauth-proxy:v4.8
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        name: oauth-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        resources:
-          limits:
-            cpu: 100m
-            memory: 256Mi
-          requests:
-            cpu: 100m
-            memory: 256Mi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /etc/tls/private
-          name: proxy-tls
       - args:
         - --port=8001
         - --rest_port=8888
@@ -1216,14 +990,8 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      serviceAccount: modelmesh-serving-sa
-      serviceAccountName: modelmesh-serving-sa
       terminationGracePeriodSeconds: 90
       volumes:
-      - name: proxy-tls
-        secret:
-          defaultMode: 420
-          secretName: model-serving-proxy-tls
       - emptyDir:
           sizeLimit: 1536Mi
         name: models-dir
@@ -1330,58 +1098,6 @@ spec:
         - mountPath: /storage-config
           name: storage-config
           readOnly: true
-      - args:
-        - --https-address=:8443
-        - --provider=openshift
-        - --openshift-service-account=modelmesh-serving-sa
-        - --upstream=http://localhost:8008
-        - --tls-cert=/etc/tls/private/tls.crt
-        - --tls-key=/etc/tls/private/tls.key
-        - --cookie-secret=SECRET
-        - '--openshift-delegate-urls={"/": {"namespace": "default", "resource": "services",
-          "verb": "get"}}'
-        - '--openshift-sar={"namespace": "default", "resource": "services", "verb":
-          "get"}'
-        - --skip-auth-regex='(^/metrics|^/apis/v1beta1/healthz)'
-        image: registry.redhat.io/openshift4/ose-oauth-proxy:v4.8
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        name: oauth-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        resources:
-          limits:
-            cpu: 100m
-            memory: 256Mi
-          requests:
-            cpu: 100m
-            memory: 256Mi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /etc/tls/private
-          name: proxy-tls
       - args:
         - while [ ! -e "$TS_CONFIG_FILE" ]; do echo "waiting for config file...";
           sleep 1; done;
@@ -1515,14 +1231,8 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      serviceAccount: modelmesh-serving-sa
-      serviceAccountName: modelmesh-serving-sa
       terminationGracePeriodSeconds: 90
       volumes:
-      - name: proxy-tls
-        secret:
-          defaultMode: 420
-          secretName: model-serving-proxy-tls
       - emptyDir:
           sizeLimit: 1536Mi
         name: models-dir
@@ -1631,58 +1341,6 @@ spec:
         - mountPath: /storage-config
           name: storage-config
           readOnly: true
-      - args:
-        - --https-address=:8443
-        - --provider=openshift
-        - --openshift-service-account=modelmesh-serving-sa
-        - --upstream=http://localhost:8008
-        - --tls-cert=/etc/tls/private/tls.crt
-        - --tls-key=/etc/tls/private/tls.key
-        - --cookie-secret=SECRET
-        - '--openshift-delegate-urls={"/": {"namespace": "default", "resource": "services",
-          "verb": "get"}}'
-        - '--openshift-sar={"namespace": "default", "resource": "services", "verb":
-          "get"}'
-        - --skip-auth-regex='(^/metrics|^/apis/v1beta1/healthz)'
-        image: registry.redhat.io/openshift4/ose-oauth-proxy:v4.8
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        name: oauth-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        resources:
-          limits:
-            cpu: 100m
-            memory: 256Mi
-          requests:
-            cpu: 100m
-            memory: 256Mi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /etc/tls/private
-          name: proxy-tls
       - args:
         - -c
         - 'mkdir -p /models/_triton_models; chmod 777 /models/_triton_models; exec
@@ -1829,14 +1487,8 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      serviceAccount: modelmesh-serving-sa
-      serviceAccountName: modelmesh-serving-sa
       terminationGracePeriodSeconds: 90
       volumes:
-      - name: proxy-tls
-        secret:
-          defaultMode: 420
-          secretName: model-serving-proxy-tls
       - emptyDir:
           sizeLimit: 1536Mi
         name: models-dir
@@ -1926,58 +1578,6 @@ spec:
         volumeMounts:
         - mountPath: /models
           name: models-dir
-      - args:
-        - --https-address=:8443
-        - --provider=openshift
-        - --openshift-service-account=modelmesh-serving-sa
-        - --upstream=http://localhost:8008
-        - --tls-cert=/etc/tls/private/tls.crt
-        - --tls-key=/etc/tls/private/tls.key
-        - --cookie-secret=SECRET
-        - '--openshift-delegate-urls={"/": {"namespace": "default", "resource": "services",
-          "verb": "get"}}'
-        - '--openshift-sar={"namespace": "default", "resource": "services", "verb":
-          "get"}'
-        - --skip-auth-regex='(^/metrics|^/apis/v1beta1/healthz)'
-        image: registry.redhat.io/openshift4/ose-oauth-proxy:v4.8
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        name: oauth-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /oauth/healthz
-            port: 8443
-            scheme: HTTPS
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        resources:
-          limits:
-            cpu: 100m
-            memory: 256Mi
-          requests:
-            cpu: 100m
-            memory: 256Mi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /etc/tls/private
-          name: proxy-tls
       - env:
         - name: MM_SERVICE_NAME
           value: modelmesh-serving
@@ -2076,14 +1676,8 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      serviceAccount: modelmesh-serving-sa
-      serviceAccountName: modelmesh-serving-sa
       terminationGracePeriodSeconds: 90
       volumes:
-      - name: proxy-tls
-        secret:
-          defaultMode: 420
-          secretName: model-serving-proxy-tls
       - emptyDir:
           sizeLimit: 1536Mi
         name: models-dir
