@@ -164,5 +164,18 @@ check-doc-links:
 # Override targets if they are included in RUN_ARGs so it doesn't run them twice
 $(eval $(RUN_ARGS):;@:)
 
+# Openshift CI
+deploy-release-dev-mode-fvt:		
+	oc new-project ${NAMESPACE} 
+	./scripts/install.sh --namespace ${NAMESPACE} --install-config-path config --dev-mode-logging --fvt
+
+# This must use modelmesh-serving namespace because fvt has hardcoded namspace. globals.go
+# usage: NAMESPACE=modelmesh-serving make e2e-test
+e2e-test: deploy-release-dev-mode-fvt fvt
+
+# usage: NAMESPACE=modelmesh-serving make e2e-delete
+e2e-delete: delete
+	oc delete ns ${NAMESPACE}
+
 # Remove $(MAKECMDGOALS) if you don't intend make to just be a taskrunner
 .PHONY: all generate manifests check-doc-links fmt fvt controller-gen oc-login deploy-release build.develop $(MAKECMDGOALS)

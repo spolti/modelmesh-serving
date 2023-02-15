@@ -56,7 +56,7 @@ import (
 	tfsapi "github.com/kserve/modelmesh-serving/fvt/generated/tensorflow_serving/apis"
 )
 
-const predictorTimeout = time.Second * 120
+const predictorTimeout = time.Second * 600
 const timeForStatusToStabilize = time.Second * 5
 
 type ModelServingConnectionType int
