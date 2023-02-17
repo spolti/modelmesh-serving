@@ -40,6 +40,7 @@ RUN microdnf install \
     tar \
     vim \
     git \
+    findutils \
     python38 \
     nodejs && \
     pip3 install pre-commit && \
