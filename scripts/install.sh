@@ -26,6 +26,7 @@ quickstart=false
 fvt=false
 user_ns_array=
 namespace_scope_mode=false # change to true to run in namespace scope
+modelmesh_serving_image=
 
 function showHelp() {
   echo "usage: $0 [flags]"
@@ -39,6 +40,7 @@ function showHelp() {
   echo "  --fvt                          Install and configure required supporting datastores in the same namespace (etcd and MinIO) - for development with fvt enabled"
   echo "  -dev, --dev-mode-logging       Enable dev mode logging (stacktraces on warning and no sampling)"
   echo "  --namespace-scope-mode         Run ModelMesh Serving in namespace scope mode"
+  echo "  --modelmesh-serving-image      Set a custom modelmesh serving image"
   echo
   echo "Installs ModelMesh Serving CRDs, controller, and built-in runtimes into specified"
   echo "Kubernetes namespaces."
@@ -170,6 +172,10 @@ while (($# > 0)); do
   --namespace-scope-mode)
     namespace_scope_mode=true
     ;;
+  --modelmesh-serving-image)
+    shift
+    modelmesh_serving_image="$1"
+    ;;
   -*)
     die "Unknown option: '${1}'"
     ;;
@@ -286,7 +292,17 @@ else
 fi
 
 info "Installing ModelMesh Serving CRDs and controller"
+if [[ ! -z $modelmesh_serving_image ]]; then 
+  cp manager/kustomization.yaml  manager/kustomization.yaml.ori
+  cd manager ;  kustomize edit set image modelmesh-controller=${modelmesh_serving_image} ; cd ../
+fi        
+
 kustomize build default | kubectl apply -f -
+
+if [[ ! -z $modelmesh_serving_image ]]; then 
+  mv manager/kustomization.yaml.ori  manager/kustomization.yaml
+fi
+
 
 if [[ $dev_mode_logging == "true" ]]; then
   info "Enabling development mode logging"
