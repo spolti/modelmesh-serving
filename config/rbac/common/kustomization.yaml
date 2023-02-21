@@ -22,6 +22,7 @@ resources:
   # - servingruntime_editor_role.yaml
   # - servingruntime_viewer_role.yaml
   - modelmesh-service-account.yaml
+  - modelmesh-serving-service-account.yaml
   - networkpolicy-controller.yaml
   - networkpolicy-runtimes.yaml
 # Comment the following 4 lines if you want to disable
