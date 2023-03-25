@@ -2,13 +2,14 @@
 
 ## Prerequisites
 
-- **Kubernetes cluster** - A Kubernetes cluster is required. You will need `cluster-admin` authority in order to complete all of the prescribed steps.
+- **Kubernetes cluster** - A Kubernetes cluster is required. You will need
+  `cluster-admin` authority in order to complete all of the prescribed steps.
 
 - **Kubectl and Kustomize** - The installation will occur via the terminal using [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) and [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/).
 
 - **etcd** - ModelMesh Serving requires an [etcd](https://etcd.io/) server in order to coordinate internal state which can be either dedicated or shared. More on this later.
 
-- **S3-compatible object storage** - Before models can be deployed, a remote S3-compatible datastore is needed from which to pull the model data. This could be for example an [IBM Cloud Object Storage](https://www.ibm.com/cloud/object-storage) instance, or a locally running [MinIO](https://github.com/minio/minio) deployment. Note that this is not required to be in place prior to the initial installation.
+- **Model storage** - The model files have to be stored in a compatible form of remote storage or on a Kubernetes Persistent Volume. For more information about supported storage options take a look at our [storage setup](/docs/predictors/setup-storage.md) page.
 
 We provide an install script to quickly run ModelMesh Serving with a provisioned etcd server. This may be useful for experimentation or development but should not be used in production.
 
@@ -39,10 +40,10 @@ A secret named `model-serving-etcd` will be created and passed to the controller
 
 ## Installation
 
-Install the latest release of [modelmesh-serving](https://github.com/kserve/modelmesh-serving/releases/latest) by first cloning the corresponding release branch:
+Install the latest release of [modelmesh-serving](https://github.com/kserve/modelmesh-serving/releases/v0.11.0-alpha) by first cloning the corresponding release branch:
 
 ```shell
-RELEASE=release-0.10
+RELEASE="release-0.11-alpha"
 git clone -b $RELEASE --depth 1 --single-branch https://github.com/kserve/modelmesh-serving.git
 cd modelmesh-serving
 ```
