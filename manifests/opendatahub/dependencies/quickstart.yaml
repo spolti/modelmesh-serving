@@ -47,7 +47,7 @@ spec:
           configMap:
             name: etcd-scripts
             defaultMode: 0554
-      initContainers: 
+      initContainers:
         - name: etcd-secret-creator
           image: quay.io/openshift/origin-cli
           command: ["/bin/bash", "-c", "--"]
@@ -55,7 +55,7 @@ spec:
             - |
               etcdpasswordexists=$(oc get secrets -o name | grep etcd-passwords || echo "false")
               modelservingetcdexists=$(oc get secrets -o name | grep model-serving-etcd || echo "false")
-              
+
               if [[ $etcdpasswordexists == "false" && $modelservingetcdexists == "false" ]]; then
                 echo "creating etcdpasswords and model-serving-etcd secrets"
                 ETC_ROOT_PSW=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 32 | head -n 1)
@@ -83,7 +83,7 @@ spec:
             - http://0.0.0.0:2379
             - --advertise-client-urls
             - http://0.0.0.0:2379
-            - '--data-dir'
+            - "--data-dir"
             - /tmp/etcd.data
           image: registry.redhat.io/rhel7/etcd@sha256:d3495b263b103681f1b09a558be43c21989bfc269eb90f84c2609042cebdc626
           name: etcd
@@ -103,7 +103,7 @@ spec:
             - containerPort: 2380
               name: server
               protocol: TCP
-          resources:  # ref: https://github.com/coreos/etcd-operator/blob/master/doc/user/spec_examples.md#three-member-cluster-with-resource-requirement
+          resources: # ref: https://github.com/coreos/etcd-operator/blob/master/doc/user/spec_examples.md#three-member-cluster-with-resource-requirement
             limits:
               cpu: 300m
               memory: 200Mi
@@ -139,7 +139,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: etcd-serviceaccount
-  namespace: $(monitoring-namespace) 
+  namespace: $(monitoring-namespace)
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

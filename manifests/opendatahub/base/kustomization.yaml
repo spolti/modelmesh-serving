@@ -4,10 +4,10 @@ commonLabels:
   app: model-mesh
   app.kubernetes.io/part-of: model-mesh
 resources:
-- ../default
-- ../dependencies/quickstart.yaml
-- ../dependencies/scripts
-- ../prometheus
+  - ../default
+  - ../dependencies/quickstart.yaml
+  - ../dependencies/scripts
+  - ../prometheus
 configMapGenerator:
   - name: mesh-parameters
     envs:

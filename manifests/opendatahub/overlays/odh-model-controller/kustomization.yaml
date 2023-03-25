@@ -1,6 +1,6 @@
 bases:
-- ./rbac
-- ./manager
-- ./prometheus
+  - ./rbac
+  - ./manager
+  - ./prometheus
 configurations:
   - params.yaml

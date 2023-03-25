@@ -7,9 +7,9 @@ metadata:
   namespace: system
 spec:
   ports:
-  - name: metrics
-    port: 8080
-    protocol: TCP
-    targetPort: 8080
+    - name: metrics
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
   selector:
     control-plane: odh-model-controller
