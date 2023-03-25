@@ -53,7 +53,7 @@ func (m *Deployment) addVolumesToDeployment(deployment *appsv1.Deployment) error
 	volumes := rts.Volumes
 
 	if deployment.Spec.Template.Spec.Volumes != nil {
-		volumes= append(volumes,deployment.Spec.Template.Spec.Volumes... )
+		volumes = append(volumes, deployment.Spec.Template.Spec.Volumes...)
 	}
 
 	volumes = append(volumes, corev1.Volume{
@@ -103,7 +103,6 @@ func (m *Deployment) addVolumesToDeployment(deployment *appsv1.Deployment) error
 	}
 
 	deployment.Spec.Template.Spec.Volumes = volumes
-
 
 	return nil
 }

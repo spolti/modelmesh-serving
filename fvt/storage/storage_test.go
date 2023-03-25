@@ -130,7 +130,7 @@ var _ = Describe("ISVCs", func() {
 			// after changing the storage-config, the runtime pod(s) restart with
 			// updated PVC mounts, wait for stability
 			By("Waiting for stable deploy state")
-			WaitForStableActiveDeployState(time.Second * 30)
+			WaitForStableActiveDeployState(time.Second * 60)
 
 			isvcObject = NewIsvcForFVT(isvcFiles[isvcWithPvcNotInStorageConfig])
 
@@ -152,7 +152,7 @@ var _ = Describe("ISVCs", func() {
 			// in order to avoid connecting to terminating pod which causes the
 			// port-forward got killed and needs to be re-established (rarely happens)
 			By("Waiting for stable deploy state before connecting gRPC connection")
-			WaitForStableActiveDeployState(time.Second * 10)
+			WaitForStableActiveDeployState(time.Second * 60)
 			By("Connecting to model serving service")
 			err := FVTClientInstance.ConnectToModelServing(Insecure)
 			Expect(err).ToNot(HaveOccurred())
@@ -176,7 +176,7 @@ var _ = Describe("ISVCs", func() {
 			FVTClientInstance.ApplyUserConfigMap(config)
 
 			By("Waiting for stable deploy state")
-			WaitForStableActiveDeployState(time.Second * 30)
+			WaitForStableActiveDeployState(time.Second * 60)
 
 			isvcObject = NewIsvcForFVT(isvcFiles[isvcWithNonExistentPvc])
 

@@ -166,16 +166,20 @@ $(eval $(RUN_ARGS):;@:)
 
 # Openshift CI
 deploy-release-dev-mode-fvt:		
-	oc new-project ${NAMESPACE} 
 ifdef MODELMESH_SERVING_IMAGE
 	./scripts/install.sh --namespace ${NAMESPACE} --install-config-path config --dev-mode-logging --fvt --modelmesh-serving-image ${MODELMESH_SERVING_IMAGE}
 else
 	./scripts/install.sh --namespace ${NAMESPACE} --install-config-path config --dev-mode-logging --fvt
 endif
 
+# Pre-downloadin required images.
+download-images:
+	oc project ${NAMESPACE} || oc new-project ${NAMESPACE} 
+	./scripts/download-images-on-nodes.sh
+
 # This must use modelmesh-serving namespace because fvt has hardcoded namspace. globals.go
 # usage: NAMESPACE=modelmesh-serving make e2e-test
-e2e-test: deploy-release-dev-mode-fvt fvt
+e2e-test: download-images deploy-release-dev-mode-fvt fvt
 
 # usage: NAMESPACE=modelmesh-serving make e2e-delete
 e2e-delete: delete

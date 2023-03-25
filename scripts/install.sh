@@ -27,6 +27,7 @@ fvt=false
 user_ns_array=
 namespace_scope_mode=false # change to true to run in namespace scope
 modelmesh_serving_image=
+default_sc_name=
 
 function showHelp() {
   echo "usage: $0 [flags]"
@@ -251,6 +252,32 @@ if [[ $delete == "true" ]]; then
   kubectl delete -f dependencies/fvt.yaml --ignore-not-found=true
 fi
 
+# Deploying NFS provisioner for RWM PVCs
+info "Deploying NFS provisioner"
+if [[ $fvt == "true" ]]; then
+  default_sc=$(oc get sc|grep default || true)
+  if [[ z${default_sc} == z ]]; then
+    die "No default StorageClass exist. FVT require NFS Provisioner for RWM pvc"
+  fi
+
+  default_sc_name=$(oc get sc|grep default|awk '{print $1}')
+
+  oc apply -f dependencies/nfs-provisioner-subs.yaml
+  
+  exist_nfs_crd=$(oc get crd --output custom-columns=":metadata.name"|grep nfsprovisioners.cache.jhouse.com || true)
+  while [ z${exist_nfs_crd} == z ]
+  do
+    sleep 5s
+    exist_nfs_crd=$(oc get crd --output custom-columns=":metadata.name"|grep nfsprovisioners.cache.jhouse.com || true)
+  done
+
+  sed "s/%default-sc-name%/${default_sc_name}/g" dependencies/nfs-provisioner.yaml |oc apply -n $namespace -f - 
+  wait_for_pods_ready "-l app=nfs-provisioner"
+
+  oc patch storageclass nfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+  oc patch storageclass ${default_sc_name} -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+fi
+
 # Quickstart resources
 if [[ $quickstart == "true" ]]; then
   info "Deploying quickstart resources for etcd and minio"
@@ -361,6 +388,9 @@ fi
 if [[ $fvt == "true" ]]; then
   info "Waiting for FVT PVC storage to be initialized ..."
   kubectl wait --for=condition=complete --timeout=180s job/pvc-init
+
+  oc patch storageclass nfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+  oc patch storageclass ${default_sc_name} -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 fi
 
 success "Successfully installed ModelMesh Serving!"
