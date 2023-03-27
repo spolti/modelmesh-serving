@@ -16,7 +16,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: prometheus-ns-access
   labels:
-    opendatahub.io/managed: 'true'
+    opendatahub.io/managed: "true"
 subjects:
   - kind: ServiceAccount
     name: prometheus-custom

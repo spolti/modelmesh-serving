@@ -16,9 +16,9 @@ kind: Pod
 metadata:
   labels:
     app: minio
-    maistra.io/expose-route: 'true'
+    maistra.io/expose-route: "true"
   annotations:
-    sidecar.istio.io/inject: 'true'
+    sidecar.istio.io/inject: "true"
   name: minio
 spec:
   containers:
@@ -27,7 +27,7 @@ spec:
         - /data1
       env:
         - name: MINIO_ACCESS_KEY
-          value:  THEACCESSKEY
+          value: THEACCESSKEY
         - name: MINIO_SECRET_KEY
           value: THESECRETKEY
       image: quay.io/opendatahub/modelmesh-minio-examples:v0.8.0
@@ -38,8 +38,8 @@ kind: Secret
 metadata:
   name: aws-connection-minio-data-connection
   labels:
-    opendatahub.io/dashboard: 'true'
-    opendatahub.io/managed: 'true'
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/managed: "true"
   annotations:
     opendatahub.io/connection-type: s3
     openshift.io/display-name: Minio Data Connection

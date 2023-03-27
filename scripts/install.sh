@@ -27,6 +27,7 @@ fvt=false
 user_ns_array=
 namespace_scope_mode=false # change to true to run in namespace scope
 modelmesh_serving_image=
+default_sc_name=
 
 function showHelp() {
   echo "usage: $0 [flags]"
@@ -134,7 +135,7 @@ wait_for_pods_ready() {
     fi
 
     wait_counter=$((wait_counter + 1))
-    echo " Waiting 10 secs..."
+    echo " Waiting 10 secs ..."
     sleep 10
   done
 }
@@ -251,12 +252,38 @@ if [[ $delete == "true" ]]; then
   kubectl delete -f dependencies/fvt.yaml --ignore-not-found=true
 fi
 
+# Deploying NFS provisioner for RWM PVCs
+info "Deploying NFS provisioner"
+if [[ $fvt == "true" ]]; then
+  default_sc=$(oc get sc|grep default || true)
+  if [[ z${default_sc} == z ]]; then
+    die "No default StorageClass exist. FVT require NFS Provisioner for RWM pvc"
+  fi
+
+  default_sc_name=$(oc get sc|grep default|awk '{print $1}')
+
+  oc apply -f dependencies/nfs-provisioner-subs.yaml
+  
+  exist_nfs_crd=$(oc get crd --output custom-columns=":metadata.name"|grep nfsprovisioners.cache.jhouse.com || true)
+  while [ z${exist_nfs_crd} == z ]
+  do
+    sleep 5s
+    exist_nfs_crd=$(oc get crd --output custom-columns=":metadata.name"|grep nfsprovisioners.cache.jhouse.com || true)
+  done
+
+  sed "s/%default-sc-name%/${default_sc_name}/g" dependencies/nfs-provisioner.yaml |oc apply -n $namespace -f - 
+  wait_for_pods_ready "-l app=nfs-provisioner"
+
+  oc patch storageclass nfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+  oc patch storageclass ${default_sc_name} -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+fi
+
 # Quickstart resources
 if [[ $quickstart == "true" ]]; then
   info "Deploying quickstart resources for etcd and minio"
   kubectl apply -f dependencies/quickstart.yaml
 
-  info "Waiting for dependent pods to be up..."
+  info "Waiting for dependent pods to be up ..."
   wait_for_pods_ready "-l app=etcd"
   wait_for_pods_ready "-l app=minio"
 fi
@@ -266,7 +293,7 @@ if [[ $fvt == "true" ]]; then
   info "Deploying fvt resources for etcd and minio"
   kubectl apply -f dependencies/fvt.yaml
 
-  info "Waiting for dependent pods to be up..."
+  info "Waiting for dependent pods to be up ..."
   wait_for_pods_ready "-l app=etcd"
   wait_for_pods_ready "-l app=minio"
 fi
@@ -317,7 +344,7 @@ if [[ $namespace_scope_mode == "true" ]]; then
   rm crd/kustomization.yaml.bak
 fi
 
-info "Waiting for ModelMesh Serving controller pod to be up..."
+info "Waiting for ModelMesh Serving controller pod to be up ..."
 wait_for_pods_ready "-l control-plane=modelmesh-controller"
 
 # Older versions of kustomize have different load restrictor flag formats.
@@ -353,6 +380,17 @@ if [[ $namespace_scope_mode != "true" ]] && [[ ! -z $user_ns_array ]]; then
   done
   rm minio-storage-secret.yaml
   rm minio-storage-secret.yaml.bak
+fi
+
+# wait for FVT storage resources that take long to initialize
+# we don't want to wait earlier to not hold up any setup steps
+# that happen after the initial FVT install block
+if [[ $fvt == "true" ]]; then
+  info "Waiting for FVT PVC storage to be initialized ..."
+  kubectl wait --for=condition=complete --timeout=180s job/pvc-init
+
+  oc patch storageclass nfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+  oc patch storageclass ${default_sc_name} -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 fi
 
 success "Successfully installed ModelMesh Serving!"
