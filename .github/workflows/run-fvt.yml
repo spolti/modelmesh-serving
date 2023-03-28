@@ -1,4 +1,4 @@
-name: FVTs
+name: FVT
 
 on:
   pull_request:
@@ -36,6 +36,7 @@ jobs:
         # Update the image tag and reduce some resource request amounts to allow FVTs to run
         # on reduced resource environments. Also the RollingUpdate strategy for Runtime deployments
         # is adjusted for these environments.
+        # Disable the torchserve ServingRuntime for now (insufficent resources to run them all).
         run: |
           sed -i 's/newTag:.*$/newTag: '"${{ env.IMAGE_TAG }}"'/' config/manager/kustomization.yaml
           sed -i '0,/cpu:.*$/s/cpu:.*$/cpu: 100m/' \
@@ -49,6 +50,7 @@ jobs:
             config/runtimes/ovms-1.x.yaml
           sed -i 's/maxSurge:.*$/maxSurge: 0/' config/internal/base/deployment.yaml.tmpl
           sed -i 's/maxUnavailable:.*$/maxUnavailable: 100%/' config/internal/base/deployment.yaml.tmpl
+          echo -e '\n  disabled: true' >> config/runtimes/torchserve-0.x.yaml
       - name: Build Controller image
         run: |
           make build.develop
@@ -67,15 +69,16 @@ jobs:
         run: |
           docker pull nvcr.io/nvidia/tritonserver:21.06.1-py3
           docker pull seldonio/mlserver:0.5.2
-          docker pull openvino/model_server:2022.1
-          docker pull kserve/modelmesh-runtime-adapter
-          docker pull kserve/rest-proxy
-          docker pull kserve/modelmesh
+          docker pull openvino/model_server:2022.2
+          # docker pull pytorch/torchserve:0.6.0-cpu
+          docker pull kserve/modelmesh:v0.11.0-alpha
+          docker pull kserve/modelmesh-runtime-adapter:v0.11.0-alpha
+          docker pull kserve/rest-proxy:v0.10.0
       - name: Check installation
         run: |
           docker images
           kubectl get pods
-          kubectl get servingruntimes
+          kubectl get clusterservingruntimes
       - name: Run FVTs
         run: |
           go install github.com/onsi/ginkgo/v2/ginkgo

@@ -28,6 +28,7 @@ import (
 
 const (
 	ModelsDir     string  = "/models"
+	PVCRootDir    string  = "/pvc_mounts"
 	ModelDirScale float64 = 1.5
 )
 
@@ -51,6 +52,10 @@ func (m *Deployment) addVolumesToDeployment(deployment *appsv1.Deployment) error
 	// start from the volumes specified in the runtime spec
 	volumes := rts.Volumes
 
+	if deployment.Spec.Template.Spec.Volumes != nil {
+		volumes = append(volumes, deployment.Spec.Template.Spec.Volumes...)
+	}
+
 	volumes = append(volumes, corev1.Volume{
 		Name: ModelsDirVolume,
 		VolumeSource: corev1.VolumeSource{
@@ -68,6 +73,7 @@ func (m *Deployment) addVolumesToDeployment(deployment *appsv1.Deployment) error
 	}
 
 	// need to mount storage config for built-in adapters and the scenarios where StorageHelper is not disabled
+	// TODO: what about allowAnyPVC only use case without MinIO
 	if rts.BuiltInAdapter != nil || useStorageHelper(rts) {
 		storageVolume := corev1.Volume{
 			Name: ConfigStorageMount,
@@ -81,7 +87,22 @@ func (m *Deployment) addVolumesToDeployment(deployment *appsv1.Deployment) error
 		volumes = append(volumes, storageVolume)
 	}
 
-	deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, volumes...)
+	// need to add pvc volumes
+	for _, pvcName := range m.PVCs {
+		pvcVolume := corev1.Volume{
+			Name: pvcName,
+			VolumeSource: corev1.VolumeSource{
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: pvcName,
+					ReadOnly:  true,
+				},
+			},
+		}
+
+		volumes = append(volumes, pvcVolume)
+	}
+
+	deployment.Spec.Template.Spec.Volumes = volumes
 
 	return nil
 }
@@ -122,6 +143,14 @@ func (m *Deployment) addRuntimeToDeployment(deployment *appsv1.Deployment) error
 			Name:      ModelsDirVolume,
 			MountPath: ModelsDir,
 		},
+	}
+
+	for _, pvcName := range m.PVCs {
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      pvcName,
+			MountPath: PVCRootDir + "/" + pvcName,
+			ReadOnly:  true,
+		})
 	}
 
 	// Now add the containers specified in serving runtime spec

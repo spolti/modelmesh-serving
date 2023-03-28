@@ -11,8 +11,8 @@ spec:
       name: odh-common
     - kustomizeConfig:
         parameters:
-        - name: monitoring-namespace
-          value: <namespace>
+          - name: monitoring-namespace
+            value: <namespace>
         overlays:
           - odh-model-controller
         repoRef:

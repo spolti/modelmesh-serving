@@ -26,7 +26,7 @@ spec:
         - namespaceSelector:
             # matches controller and runtime pods
             matchLabels:
-              modelmesh-enabled: 'true'
+              modelmesh-enabled: "true"
       ports:
         - port: 2379
           protocol: TCP

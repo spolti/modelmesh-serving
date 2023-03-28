@@ -44,7 +44,7 @@ spec:
         app.kubernetes.io/name: modelmesh-controller
         name: {{.ServiceName}}-{{.Name}}
     spec:
-      serviceAccountName: modelmesh-serving-sa
+      serviceAccountName: "{{.ServiceAccountName}}"
       volumes:
         - name: proxy-tls
           secret:
@@ -63,7 +63,9 @@ spec:
           env:
             - name: MM_SERVICE_NAME
               value: {{.ServiceName}}
-              # External gRPC port of the service, should match ports.containerPort
+            - name: MM_PAYLOAD_PROCESSORS
+              value: {{.PayloadProcessors}}
+            # External gRPC port of the service, should match ports.containerPort
             - name: MM_SVC_GRPC_PORT
               value: "{{.Port}}"
             - name: WKUBE_POD_NAME
@@ -128,7 +130,7 @@ spec:
           args:
             - --https-address=:8443
             - --provider=openshift
-            - --openshift-service-account=modelmesh-serving-sa
+            - --openshift-service-account="{{.ServiceAccountName}}"
             - --upstream=http://localhost:8008
             - --tls-cert=/etc/tls/private/tls.crt
             - --tls-key=/etc/tls/private/tls.key

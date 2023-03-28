@@ -10,10 +10,10 @@ To quickly get started using ModelMesh Serving, here is a brief guide.
 
 ## 1. Install ModelMesh Serving
 
-### Get the latest release
+### Get the `v0.11.0-alpha` release
 
 ```shell
-RELEASE=release-0.9
+RELEASE="release-0.11-alpha"
 git clone -b $RELEASE --depth 1 --single-branch https://github.com/kserve/modelmesh-serving.git
 cd modelmesh-serving
 ```
@@ -22,7 +22,7 @@ cd modelmesh-serving
 
 ```shell
 kubectl create namespace modelmesh-serving
-./scripts/install.sh --namespace modelmesh-serving --quickstart
+./scripts/install.sh --namespace-scope-mode --namespace modelmesh-serving --quickstart
 ```
 
 This will install ModelMesh Serving in the `modelmesh-serving` namespace, along with an etcd and MinIO instances.
@@ -53,6 +53,7 @@ kubectl get servingruntimes
 NAME           DISABLED   MODELTYPE    CONTAINERS   AGE
 mlserver-0.x              sklearn      mlserver     5m
 ovms-1.x                  openvino_ir  ovms         5m
+torchserve-0.x            pytorch-mar  torchserve   5m
 triton-2.x                tensorflow   triton       5m
 ```
 
@@ -62,9 +63,10 @@ are:
 
 | ServingRuntime | Supported Frameworks                |
 | -------------- | ----------------------------------- |
-| triton-2.x     | tensorflow, pytorch, onnx, tensorrt |
 | mlserver-0.x   | sklearn, xgboost, lightgbm          |
 | ovms-1.x       | openvino_ir, onnx                   |
+| torchserve-0.x | pytorch-mar                         |
+| triton-2.x     | tensorflow, pytorch, onnx, tensorrt |
 
 ## 2. Deploy a model
 
@@ -189,7 +191,7 @@ since a normal Service has issues load balancing gRPC requests. See more info
 
 ### gRPC request
 
-To test out **gRPC** inference requests, you can port-forward the headless service _in a separate terminal window_:
+To test out gRPC inference requests, you can port-forward the headless service **in a separate terminal window**:
 
 ```shell
 kubectl port-forward --address 0.0.0.0 service/modelmesh-serving 8033 -n modelmesh-serving
@@ -198,10 +200,9 @@ kubectl port-forward --address 0.0.0.0 service/modelmesh-serving 8033 -n modelme
 Then a gRPC client generated from the KServe [grpc_predict_v2.proto](https://github.com/kserve/kserve/blob/master/docs/predict-api/v2/grpc_predict_v2.proto)
 file can be used with `localhost:8033`. A ready-to-use Python example of this can be found [here](https://github.com/pvaneck/model-serving-sandbox/tree/main/grpc-predict).
 
-Alternatively, you can test inference with [grpcurl](https://github.com/fullstorydev/grpcurl). This can easily be installed with `brew install grpcurl` if on macOS.
+Alternatively, you can test inferences using [grpcurl](https://github.com/fullstorydev/grpcurl). This can be installed easily with `brew install grpcurl` if on macOS.
 
-With `grpcurl`, a request can be sent to the SKLearn MNIST model like the following. Make sure that the `MODEL_NAME`
-variable below is set to the name of your `InferenceService`.
+An example that uses `grpcurl` to send a request to the SKLearn MNIST model is provided below. The example should be run from `modelmesh-serving`'s root directory and `MODEL_NAME` should be set to the name of the deployed `InferenceService`.
 
 ```shell
 MODEL_NAME=example-sklearn-isvc
@@ -269,7 +270,8 @@ To see more detailed instructions and information, click [here](./predictors/run
 
 ## 4. (Optional) Deleting your ModelMesh Serving installation
 
-To delete all ModelMesh Serving resources that were installed, run the following from the root of the project:
+To delete all ModelMesh Serving resources that were installed, run the following
+command from the root of the project:
 
 ```shell
 ./scripts/delete.sh --namespace modelmesh-serving

@@ -43,7 +43,7 @@ const (
 	DefaultEtcdSecretName = "model-serving-etcd"
 
 	ConfigType        = "yaml"
-	MountLocation     = "/etc/model-serving/config-defaults.yaml"
+	MountLocation     = "/etc/model-serving/config/default"
 	ViperKeyDelimiter = "::"
 )
 
@@ -57,6 +57,7 @@ type Config struct {
 	// System config
 	EtcdSecretName    string // DEPRECATED - should be removed in the future
 	ModelMeshEndpoint string // For dev use only
+	AllowAnyPVC       bool
 
 	// Service config
 	InferenceServiceName    string
@@ -75,6 +76,7 @@ type Config struct {
 	StorageSecretName      string
 	EnableAccessLogging    bool
 	BuiltInServerTypes     []string
+	PayloadProcessors      []string
 
 	ServiceAccountName string
 
@@ -333,7 +335,8 @@ func defaults(v *viper.Viper) {
 	v.SetDefault("InferenceServicePort", 8033)
 	v.SetDefault("PodsPerRuntime", 2)
 	v.SetDefault("StorageSecretName", "storage-config")
-	v.SetDefault("ServiceAccountName", "")
+	v.SetDefault("ServiceAccountName", "modelmesh-serving-sa")
+	v.SetDefault("PayloadProcessors", []string{})
 	v.SetDefault(concatStringsWithDelimiter([]string{"Metrics", "Port"}), 2112)
 	v.SetDefault(concatStringsWithDelimiter([]string{"Metrics", "Scheme"}), "https")
 	v.SetDefault(concatStringsWithDelimiter([]string{"ScaleToZero", "Enabled"}), true)
@@ -341,7 +344,7 @@ func defaults(v *viper.Viper) {
 	// default size 16MiB in bytes
 	v.SetDefault("GrpcMaxMessageSizeBytes", 16777216)
 	v.SetDefault("BuiltInServerTypes", []string{
-		string(kserveapi.MLServer), string(kserveapi.Triton), string(kserveapi.OVMS),
+		string(kserveapi.MLServer), string(kserveapi.Triton), string(kserveapi.OVMS), "torchserve",
 	})
 }
 
@@ -420,6 +423,12 @@ func NewMergedConfigFromString(configYaml string) (*Config, error) {
 		return nil, fmt.Errorf("Invalid config for 'StorageHelperResources': %s", err)
 	}
 
+	// check that none of the payload processors contains a space
+	for _, processor := range config.PayloadProcessors {
+		if strings.Contains(processor, " ") {
+			return nil, fmt.Errorf("Error parsing payload processor '%s': endpoint must not contain spaces.", processor)
+		}
+	}
 	return &config, nil
 }
 

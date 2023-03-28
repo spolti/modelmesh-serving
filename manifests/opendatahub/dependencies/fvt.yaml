@@ -56,7 +56,7 @@ spec:
             - containerPort: 2380
               name: server
               protocol: TCP
-          resources:  # ref: https://github.com/coreos/etcd-operator/blob/master/doc/user/spec_examples.md#three-member-cluster-with-resource-requirement
+          resources: # ref: https://github.com/coreos/etcd-operator/blob/master/doc/user/spec_examples.md#three-member-cluster-with-resource-requirement
             limits:
               cpu: 300m
               memory: 200Mi

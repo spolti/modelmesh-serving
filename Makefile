@@ -47,7 +47,7 @@ test:
 
 # Run fvt tests. This requires an etcd, kubernetes connection, and model serving installation. Ginkgo CLI is used to run them in parallel
 fvt:
-	ginkgo -v -p -progress --fail-fast fvt/predictor fvt/scaleToZero --timeout=40m
+	ginkgo -v -procs=2 --progress --fail-fast fvt/predictor fvt/scaleToZero fvt/storage --timeout=50m
 
 # Command to regenerate the grpc go files from the proto files
 fvt-protoc:
@@ -163,6 +163,27 @@ check-doc-links:
 
 # Override targets if they are included in RUN_ARGs so it doesn't run them twice
 $(eval $(RUN_ARGS):;@:)
+
+# Openshift CI
+deploy-release-dev-mode-fvt:		
+ifdef MODELMESH_SERVING_IMAGE
+	./scripts/install.sh --namespace ${NAMESPACE} --install-config-path config --dev-mode-logging --fvt --modelmesh-serving-image ${MODELMESH_SERVING_IMAGE}
+else
+	./scripts/install.sh --namespace ${NAMESPACE} --install-config-path config --dev-mode-logging --fvt
+endif
+
+# Pre-downloadin required images.
+download-images:
+	oc project ${NAMESPACE} || oc new-project ${NAMESPACE} 
+	./scripts/download-images-on-nodes.sh
+
+# This must use modelmesh-serving namespace because fvt has hardcoded namspace. globals.go
+# usage: NAMESPACE=modelmesh-serving make e2e-test
+e2e-test: download-images deploy-release-dev-mode-fvt fvt
+
+# usage: NAMESPACE=modelmesh-serving make e2e-delete
+e2e-delete: delete
+	oc delete ns ${NAMESPACE}
 
 # Remove $(MAKECMDGOALS) if you don't intend make to just be a taskrunner
 .PHONY: all generate manifests check-doc-links fmt fvt controller-gen oc-login deploy-release build.develop $(MAKECMDGOALS)
