@@ -47,9 +47,9 @@ spec:
           configMap:
             name: etcd-scripts
             defaultMode: 0554
-      initContainers:
+      initContainers: 
         - name: etcd-secret-creator
-          image: quay.io/openshift/origin-cli
+          image: registry.redhat.io/openshift4/ose-cli@sha256:25fef269ac6e7491cb8340119a9b473acbeb53bc6970ad029fdaae59c3d0ca61
           command: ["/bin/bash", "-c", "--"]
           args:
             - |
