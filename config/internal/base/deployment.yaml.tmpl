@@ -44,7 +44,7 @@ spec:
         app.kubernetes.io/name: modelmesh-controller
         name: {{.ServiceName}}-{{.Name}}
     spec:
-      serviceAccountName: {{.ServiceAccountName}}
+      serviceAccountName: "{{.ServiceAccountName}}"
       volumes:
         - name: proxy-tls
           secret:
@@ -128,7 +128,7 @@ spec:
           args:
             - --https-address=:8443
             - --provider=openshift
-            - --openshift-service-account={{.ServiceAccountName}}
+            - --openshift-service-account="{{.ServiceAccountName}}"
             - --upstream=http://localhost:8008
             - --tls-cert=/etc/tls/private/tls.crt
             - --tls-key=/etc/tls/private/tls.key
