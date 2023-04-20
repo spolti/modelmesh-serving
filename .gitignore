@@ -34,3 +34,7 @@ bin
 devbuild
 .develop_image_name
 .dev/
+opendatahub/.cache
+opendatahub/.kustomize
+opendatahub/scripts/.temp_new_modelmesh_manifests
+opendatahub/scripts/manifests/params.env
