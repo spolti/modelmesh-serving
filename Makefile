@@ -165,6 +165,9 @@ check-doc-links:
 $(eval $(RUN_ARGS):;@:)
 
 # Openshift CI
+
+## Upstream
+## This deploy modelmesh using manifests in config folder
 deploy-release-dev-mode-fvt:		
 ifdef MODELMESH_SERVING_IMAGE
 	./scripts/install.sh --namespace ${NAMESPACE} --install-config-path config --dev-mode-logging --fvt --modelmesh-serving-image ${MODELMESH_SERVING_IMAGE}
@@ -172,7 +175,7 @@ else
 	./scripts/install.sh --namespace ${NAMESPACE} --install-config-path config --dev-mode-logging --fvt
 endif
 
-# Pre-downloadin required images.
+# Pre-download required images.
 download-images:
 	oc project ${NAMESPACE} || oc new-project ${NAMESPACE} 
 	./scripts/download-images-on-nodes.sh
@@ -184,6 +187,26 @@ e2e-test: download-images deploy-release-dev-mode-fvt fvt
 # usage: NAMESPACE=modelmesh-serving make e2e-delete
 e2e-delete: delete
 	oc delete ns ${NAMESPACE}
+
+## ODH
+## This deploy modelmesh using manifests in opendatahub/odh-manifests folder
+deploy-fvt-for-odh:
+ifdef FORCE
+	$(eval extra_options += --force) 
+endif
+ifdef TAG
+	$(eval extra_options += --tag ${TAG}) 
+endif
+ifdef CONTROLLERNAMESPACE
+	$(eval extra_options += --ctrl-namespace ${CONTROLLERNAMESPACE}) 
+endif
+	./opendatahub/scripts/deploy_fvt.sh --namespace ${NAMESPACE} ${extra_options}
+
+# usage: TAG=fast/stable make e2e-test-for-odh
+e2e-test-for-odh: deploy-fvt-for-odh fvt
+
+cleanup-for-odh:
+	./opendatahub/scripts/cleanup.sh
 
 # Remove $(MAKECMDGOALS) if you don't intend make to just be a taskrunner
 .PHONY: all generate manifests check-doc-links fmt fvt controller-gen oc-login deploy-release build.develop $(MAKECMDGOALS)
