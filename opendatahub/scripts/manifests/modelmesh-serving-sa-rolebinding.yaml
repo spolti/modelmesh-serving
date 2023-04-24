@@ -7,6 +7,6 @@ roleRef:
   kind: ClusterRole
   name: system:auth-delegator
 subjects:
-- kind: ServiceAccount
-  name: modelmesh-serving-sa
-  namespace: %namespace%
+  - kind: ServiceAccount
+    name: modelmesh-serving-sa
+    namespace: %namespace%
