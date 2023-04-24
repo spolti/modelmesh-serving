@@ -73,7 +73,6 @@ Finally, we validate the manifest by actually generating the corresponding [kfde
   ```
   export OCP_TOKEN=$(oc whoami --show-token)
   export OCP_ADDRESS=$(oc whoami --show-server|cut -d/ -f3)
-  export NAMESPACESCOPEMODE=true
   ```
 
 ### Upstream Manifests

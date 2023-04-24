@@ -35,6 +35,6 @@ devbuild
 .develop_image_name
 .dev/
 .cache/
-.kustomize/
-opendatahub/scripts/.temp_new_modelmesh_manifests
+kustomize/
+.temp_new_modelmesh_manifests
 opendatahub/scripts/manifests/params.env

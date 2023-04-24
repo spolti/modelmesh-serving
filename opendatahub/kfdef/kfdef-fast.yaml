@@ -25,7 +25,7 @@ spec:
             value: opendatahub
         repoRef:
           name: manifests
-          path: opendatahub/odh-manifests/modelmesh
+          path: opendatahub/odh-manifests/model-mesh
       name: model-mesh
   repos:
     - name: odh-manifests

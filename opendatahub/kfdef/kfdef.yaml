@@ -12,7 +12,7 @@ spec:
     - kustomizeConfig:
         repoRef:
           name: manifests
-          path: opendatahub/odh-manifests/modelmesh
+          path: opendatahub/odh-manifests/model-mesh
       name: modelmesh
   repos:
     - name: odh-manifests
