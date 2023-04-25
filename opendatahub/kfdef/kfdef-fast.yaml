@@ -31,6 +31,6 @@ spec:
     - name: odh-manifests
       uri: https://api.github.com/repos/opendatahub-io/odh-manifests/tarball/master
     - name: manifests
-      uri: https://api.github.com/repos/opendatahub-io/modelmesh-serving/tarball/main
+      uri: https://api.github.com/repos/%mm_user%/modelmesh-serving/tarball/%mm_branch%
       # uri: https://api.github.com/repos/Jooho/modelmesh-serving/tarball/restructed_odh_manifests
   version: master

@@ -14,7 +14,7 @@ if [[ -n $C_NFS ]] || [[ -n $C_FULL ]]; then
 fi
 
 if [[ -n $C_MM_TEST ]] || [[ -n $C_FULL ]]; then
-  kustomize build opendatahub/scripts/manifests/runtimes/ |oc delete -f -
+  kustomize build  ${MANIFESTS_DIR}/runtimes/ |oc delete -f -
   oc delete pvc,pod --all --force -n modelmesh-serving
   oc delete ns modelmesh-serving
 fi
@@ -24,7 +24,7 @@ if [[ -n $C_MM_CTRL_KUSTOMIZE ]] || [[ -n $C_FULL ]]; then
 fi
 
 if [[ -n $C_MM_CTRL_KFCTL ]] || [[ -n $C_FULL ]]; then
-  kfctl build -V -f $OPENDATAHUB_DIR/kfdef-local.yaml -d | oc delete -f -
+  kfctl build -V -f $OPENDATAHUB_DIR/kfdef/kfdef-local.yaml -d | oc delete -f -
   rm -rf $OPENDATAHUB_DIR/.cache $OPENDATAHUB_DIR/kustomize
   oc delete ns opendatahub
 fi
@@ -32,5 +32,5 @@ fi
 if [[ -n $C_MM_CTRL_OPS ]] || [[ -n $C_FULL ]]; then
   oc delete kfdef opendatahub -n opendatahub
   oc delete ns opendatahub
-  oc delete -f opendatahub/scripts/manifests/subs_odh_operator.yaml
+  oc delete -f ${MANIFESTS_DIR}/subs_odh_operator.yaml
 fi

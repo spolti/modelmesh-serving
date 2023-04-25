@@ -202,8 +202,23 @@ ifdef CONTROLLERNAMESPACE
 endif
 	./opendatahub/scripts/deploy_fvt.sh --namespace ${NAMESPACE} ${extra_options}
 
+deploy-mm-for-odh:
+ifdef IMG
+	$(eval deploy_mm_extra_options += --image ${IMG}) 
+endif
+ifdef TAG
+	$(eval deploy_mm_extra_options += --tag ${TAG}) 
+endif
+ifdef USER
+	$(eval deploy_mm_extra_options += --user ${USER}) 
+endif
+ifdef BRANCH
+	$(eval deploy_mm_extra_options += --branch ${BRANCH}) 
+endif
+	./opendatahub/scripts/install_odh.sh --ctrl-namespace ${CONTROLLERNAMESPACE} ${deploy_mm_extra_options}
+
 # usage: TAG=fast/stable make e2e-test-for-odh
-e2e-test-for-odh: deploy-fvt-for-odh fvt
+e2e-test-for-odh: deploy-mm-for-odh deploy-fvt-for-odh fvt
 
 cleanup-for-odh:
 	./opendatahub/scripts/cleanup.sh
