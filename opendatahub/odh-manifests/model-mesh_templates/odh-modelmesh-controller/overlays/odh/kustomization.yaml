@@ -6,6 +6,7 @@ resources:
   - ./scripts/
   - ./quickstart.yaml
   - ./rbac/
+  - ./manager
 
 commonLabels:
   app.kubernetes.io/managed-by: modelmesh-controller

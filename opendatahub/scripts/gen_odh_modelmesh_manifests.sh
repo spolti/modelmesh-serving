@@ -86,6 +86,15 @@ echo -n ".. Replace replicas of odh modelmesh controller to 3"
 yq e '.spec.replicas = 3' -i ${MODELMESH_CONTROLLER_DIR}/manager/manager.yaml
 echo -e "\r ✓"
 
+echo -n ".. Increase manager limit memory size to 2G"
+yq e '.spec.template.spec.containers[0].resources.limits.memory = "2Gi"' -i  ${MODELMESH_CONTROLLER_DIR}/manager/manager.yaml
+echo -e "\r ✓"
+
+echo -n ".. Add trustAI option into config-defaults.yaml"
+yq eval '."payloadProcessors" = ""'  -i ${MODELMESH_CONTROLLER_DIR}/default/config-defaults.yaml
+echo -e "\r ✓"
+
+
 
 IS_IDENTICAL=$(diff -r ${TARGET_DIR}/model-mesh_templates/odh-modelmesh-controller/ ${ODH_MANIFESTS_DIR}/model-mesh/odh-modelmesh-controller/)
 

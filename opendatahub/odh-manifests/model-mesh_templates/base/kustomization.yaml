@@ -16,7 +16,7 @@ generatorOptions:
 
 vars:
   - fieldref:
-      fieldPath: data.mesh-namespace
+      fieldPath: metadata.namespace
     name: mesh-namespace
     objref:
       apiVersion: v1

@@ -48,3 +48,4 @@ storageHelperResources:
 serviceAccountName: "modelmesh-serving-sa"
 metrics:
   enabled: true
+payloadProcessors: ""
