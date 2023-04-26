@@ -7,6 +7,7 @@ This document describes in detail the different ways to deploy and test the mani
 
 - [How to deploy manifests?](#how-to-deploy-manifests)
 - [Manifests Test](#manifests-test)
+- [Makefile cheatsheet](./makefile-cheatsheet.md)
 
 ## How to deploy manifests?
 
@@ -73,6 +74,7 @@ Finally, we validate the manifest by actually generating the corresponding [kfde
   ```
   export OCP_TOKEN=$(oc whoami --show-token)
   export OCP_ADDRESS=$(oc whoami --show-server|cut -d/ -f3)
+  export ctrlnamespace=opendatahub
   ```
 
 ### Upstream Manifests
@@ -94,9 +96,10 @@ NAMESPACE=modelmesh-serving make e2e-delete
 **Deploy ModelMesh Controller**
 
 ```
+cd opendatahub/odh-manifests/model-mesh/base; kustomize edit set namespace ${ctrlnamespace} ; cd -
 kustomize build opendatahub/odh-manifests/model-mesh/base  | oc create -f -
 
-oc project opendatahub
+oc project ${ctrlnamespace}
 ```
 
 **Deploy required components for fvt test(minio/pvc)**
@@ -134,7 +137,11 @@ tar czvf /tmp/odh-manifests.gzip modelmesh-serving/opendatahub/odh-manifests/
 ```
 cd modelmesh-serving
 oc new-project opendatahub
-kfctl build -V -f ./opendatahub/kfdef/kfdef-local.yaml -d | oc create -f -
+
+rm /tmp/modelmesh-e2e -rf
+sed "s/%controller-namespace%/${ctrlnamespace}/g" opendatahub/kfdef/kfdef-local.yaml  > /tmp/modelmesh-e2e/kfdef.yaml
+
+kfctl build -V -f /tmp/modelmesh-e2e/kfdef.yaml -d | oc create -f -
 ```
 
 **Deploy required components for fvt test(minio/pvc)**
@@ -181,10 +188,10 @@ oc project opendatahub || oc new-project opendatahub
 sed "s/%mm_user%/${mm_user}/g" opendatahub/kfdef/kfdef.yaml | sed "s/%mm_branch%/${mm_branch}/g" |oc create -n opendatahub -f -
 
  # fast (main branch)
- # oc create -n opendatahub -f  opendatahub/kfdef/kfdef-fast.yaml
+ # sed "s/%mm_user%/${mm_user}/g" opendatahub/kfdef/kfdef-stable.yaml | sed "s/%mm_branch%/${mm_branch}/g" | oc create -n opendatahub -f  opendatahub/kfdef/kfdef-fast.yaml
 
  # stable (release branch)
- # oc create -n opendatahub -f  opendatahub/kfdef/kfdef-stable.yaml
+ # sed "s/%mm_user%/${mm_user}/g" opendatahub/kfdef/kfdef-stable.yaml| sed "s/%mm_branch%/${mm_branch}/g" | oc create -n opendatahub -f
 ```
 
 **Deploy required components for fvt test(minio/pvc)**
@@ -209,6 +216,14 @@ If all 3 manifests validations passes, you can compare this manifests with odh-m
 
 ```
 C_MM_TEST=true C_MM_CTRL_OPS=true make cleanup-for-odh
+```
+
+### E2E Test with odh manifests
+
+This is all-in-one script that includes deploying modelmesh controller, fvt related objects and doing fvt test.
+
+```
+CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=true make e2e-test-for-odh
 ```
 
 ## Clean Up All Test Objects

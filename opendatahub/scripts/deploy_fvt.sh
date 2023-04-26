@@ -61,16 +61,20 @@ while (($# > 0)); do
   shift
 done    
 
+echo "* Start to prepare FVT test environment"
 allowedImgName=false
 if [[ ${img_map} != none ]]; then
+  info "Checking the custom image is in allow image list" 
   checkAllowedImage ${img_name}
   if [[ $? == 0 ]]; then
+    info "The image ${img_name} is allowed to use"
     allowedImgName=true
   fi
 fi
 
 # Copy fvt tests manifests into manifest folder
 if [[ ! -d $MANIFESTS_DIR/fvt ]] || [[ ${force} == "true" ]];then
+  info ".. Copying fvt tests manifests into manifest folder"
   cp -R $MANIFESTS_DIR/fvt_templates $MANIFESTS_DIR/fvt
   cp -R $ODH_MANIFESTS_DIR/model-mesh/odh-modelmesh-controller/dependencies/* $MANIFESTS_DIR/fvt/.
   # Convert imaes to use quay.io image (avoid dockerhub pull limit)
@@ -81,11 +85,13 @@ fi
 
 # Copy opendatahub params.env into manifests folder to get the right images
 if [[ ! -f $MANIFESTS_DIR/params.env ]] || [[ ${force} == "true" ]];then
+  info ".. Copying opendatahub params.env into manifests folder to get the right images"
   cp -R $ODH_MANIFESTS_DIR/model-mesh/base/params.env $MANIFESTS_DIR/.
 fi
 
 # The upstream use ClusterServingRuntime so this replace ClusterServingRuntime to ServingRuntime.
 if [[ ! -d $MANIFESTS_DIR/runtimes ]] || [[ ${force} == "true" ]];then
+  info ".. The upstream use ClusterServingRuntime so this replace ClusterServingRuntime to ServingRuntime."
   cp -R $ODH_MANIFESTS_DIR/model-mesh/odh-modelmesh-controller/runtimes $MANIFESTS_DIR/.
   # Remove not supported runtimes
   pushd $MANIFESTS_DIR/runtimes
@@ -99,43 +105,51 @@ if [[ ! -d $MANIFESTS_DIR/runtimes ]] || [[ ${force} == "true" ]];then
   popd
 fi
 
-# Create a namespace
-oc project $namespace|| oc new-project $namespace
-
-# Download images on each node
-if [[ ${allowedImgName} == "true" ]] && [[ ${tag} != "none" ]] ; then
-  $SCRIPT_DIR/download_images_on_nodes.sh $tag $img_name $img_url
-else
-  $SCRIPT_DIR/download_images_on_nodes.sh $tag
-fi
-
-# Deploy NFS Provisioner
 # $SCRIPT_DIR/deploy_nfs_provisioner.sh $namespace
+echo "* Deploying NFS provisioner for RWM PVCs"
 oc get ns nfs-provisioner|| $SCRIPT_DIR/deploy_nfs_provisioner.sh nfs-provisioner
 
+info ".. Creating a namespace for fvt test"
+oc get ns $namespace || oc new-project $namespace #for openshift-ci
+oc project $namespace || echo "ignored this due to openshift-ci"
+
+# Download images on each node
+echo "* Download Images on Nodes"
+if [[ ${allowedImgName} == "true" ]]; then
+  echo "NAMESPACE=$namespace TAG=$tag IMAGE_NAME=$img_name IMAGE_URL=$img_url"
+  $SCRIPT_DIR/download_images_on_nodes.sh $namespace $tag $img_name $img_url
+else
+  echo "NAMESPACE=$namespace TAG=$tag"
+  $SCRIPT_DIR/download_images_on_nodes.sh $namespace $tag
+fi
+
 # Deploy fvt
+info ".. Deploying fvt objects"
 pushd $MANIFESTS_DIR/fvt
 kustomize edit set namespace "$namespace"
 popd
 
 kustomize build $MANIFESTS_DIR/fvt/ |oc apply -f -
 
-info "Waiting for dependent pods to be up ..."
-wait_for_pods_ready "-l app=minio"
+info ".. Waiting for dependent pods to be up ..."
+wait_for_pods_ready "-l app=minio" "$namespace"
 
 # pvc initialize for fvt test.
-info "Waiting for FVT PVC storage to be initialized ..."
-kubectl wait --for=condition=complete --timeout=180s job/pvc-init
+info ".. Waiting for FVT PVC storage to be initialized ..."
+oc wait --for=condition=complete --timeout=180s job/pvc-init -n ${namespace}
 
 # Setup the namespace for modelmesh test
+info ".. Adding modelmesh-enabled label to namespace"
 oc label namespace ${namespace} modelmesh-enabled=true --overwrite=true
 
-# Deploy runtime
-kustomize build $MANIFESTS_DIR/runtimes/ |oc apply -f -
+info ".. Deploying servingRuntime"
+kustomize build $MANIFESTS_DIR/runtimes/ |oc apply -n ${namespace} -f -
 
-# Create a rolebinding for sa 'modelmesh-seving-sa' which is managed by odh-model-controller with inferenceservice
-oc get sa modelmesh-serving-sa -n  ${namespace}  ||oc create sa modelmesh-serving-sa -n  ${namespace} 
-oc get clusterrolebinding ${namespace}-modelmesh-serving-sa-auth-delegator || sed "s/%namespace%/${namespace}/g" $MANIFESTS_DIR/modelmesh-serving-sa-rolebinding.yaml | oc create -f -
+info ".. Creating a rolebinding for sa 'modelmesh-seving-sa' which is managed by odh-model-controller with inferenceservice"
+oc get sa modelmesh-serving-sa -n ${namespace}  ||oc create sa modelmesh-serving-sa -n ${namespace} 
+oc get clusterrolebinding ${namespace}-modelmesh-serving-sa-auth-delegator || sed "s/%namespace%/${namespace}/g" $MANIFESTS_DIR/modelmesh-serving-sa-rolebinding.yaml | oc apply -n ${namespace} -f -
 
 # Create a SA "prometheus-ns-access" becuase odh-model-controller create rolebinding "prometheus-ns-access" with the SA where namespaces have modelmesh-enabled=true label
-oc get sa prometheus-ns-access -n  ${namespace}  ||oc create sa prometheus-ns-access -n  ${namespace}  
+oc get sa prometheus-ns-access -n ${namespace}  ||oc create sa prometheus-ns-access -n ${namespace}  
+
+success "[SUCCESS] Ready to do fvt test"

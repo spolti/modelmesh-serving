@@ -3,9 +3,10 @@
 source "$(dirname "$0")/env.sh"
 source "$(dirname "$0")/utils.sh"
 
-tag=$1
-img_name=$2
-img_url=$3
+namespace=$1
+tag=$2
+img_name=$3
+img_url=$4
 
 TRITON_SERVER_IMG=nvcr.io/nvidia/tritonserver
 ML_SERVER_IMG=seldonio/mlserver
@@ -25,12 +26,12 @@ export REST_PROXY=$(cat $MANIFESTS_DIR/params.env |grep odh-mm-rest-proxy=|cut -
 
 # You can choose fast/stable for image tag to test easily
 if [[ ${tag} == "fast" ]]; then
-  echo "TAG=fast is set"
+  info ".. TAG=fast is set"
   export MODELMESH=quay.io/opendatahub/modelmesh:fast
   export MODELMESH_RUNTIME=quay.io/opendatahub/modelmesh-runtime-adapter:fast
   export REST_PROXY=quay.io/opendatahub/rest-proxy:fast
 elif [[ ${tag} == "stable" ]]; then
-  echo "TAG=stable is set"
+  info ".. TAG=stable is set"
   export MODELMESH=quay.io/opendatahub/modelmesh:stable
   export MODELMESH_RUNTIME=quay.io/opendatahub/modelmesh-runtime-adapter:stable
   export REST_PROXY=quay.io/opendatahub/rest-proxy:stable
@@ -40,12 +41,15 @@ fi
 if [[ z${img_name} != z ]]; then
   case $img_name in
     modelmesh)
+      info ".. modelmesh image is set"
       export MODELMESH=${img_url}
       ;;
     modelmesh-runtime-adapter)
+      info ".. modelmesh-runtime-adapter image is set"
       export MODELMESH_RUNTIME=${img_url}
       ;;
     rest-proxy)
+      info ".. rest-proxy image is set"
       export REST_PROXY=${img_url}
       ;;
     *)
@@ -58,10 +62,10 @@ fi
 images=(${TRITON_SERVER} ${ML_SERVER} ${OPENVINO} ${TORCHSERVE} ${MODELMESH} ${MODELMESH_RUNTIME} ${REST_PROXY})
 
 echo 
-echo "Start dowonload the following images:"
-echo ${images[@]}
+info "Start dowonload the following images:"
+info "${images[@]}"
 
-cat <<EOF | oc apply -f -
+cat <<EOF | oc apply -n $namespace -f -
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -106,8 +110,10 @@ spec:
         args: ["-c", "sleep infinity"]
 EOF
 
-wait_downloading_images $images
+wait_downloading_images $images $namespace
 
 echo 
-echo "Delete image downloading daemonset"
+info "Delete image downloading daemonset"
 oc delete daemonset  image-downloader --force --grace-period=0
+
+success "[SUCCESS] Downloaded necessary images on all nodes"

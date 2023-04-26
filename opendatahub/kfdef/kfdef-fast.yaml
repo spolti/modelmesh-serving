@@ -2,6 +2,7 @@ apiVersion: kfdef.apps.kubeflow.org/v1
 kind: KfDef
 metadata:
   name: opendatahub
+  namespace: %controller-namespace%
 spec:
   applications:
     - kustomizeConfig:
@@ -22,7 +23,7 @@ spec:
           - name: odh-model-controller
             value: quay.io/opendatahub/odh-model-controller:fast
           - name: monitoring-namespace
-            value: opendatahub
+            value: %controller-namespace%
         repoRef:
           name: manifests
           path: opendatahub/odh-manifests/model-mesh

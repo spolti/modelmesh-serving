@@ -3,6 +3,3 @@ kind: Kustomization
 resources:
   - ../default
   - ../prometheus
-namespace: opendatahub
-configurations:
-  - params.yaml

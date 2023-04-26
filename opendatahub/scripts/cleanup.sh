@@ -24,7 +24,7 @@ if [[ -n $C_MM_CTRL_KUSTOMIZE ]] || [[ -n $C_FULL ]]; then
 fi
 
 if [[ -n $C_MM_CTRL_KFCTL ]] || [[ -n $C_FULL ]]; then
-  kfctl build -V -f $OPENDATAHUB_DIR/kfdef/kfdef-local.yaml -d | oc delete -f -
+  kfctl build -V -f ${KFDEF_FILE} -d | oc delete -f -
   rm -rf $OPENDATAHUB_DIR/.cache $OPENDATAHUB_DIR/kustomize
   oc delete ns opendatahub
 fi
@@ -33,4 +33,7 @@ if [[ -n $C_MM_CTRL_OPS ]] || [[ -n $C_FULL ]]; then
   oc delete kfdef opendatahub -n opendatahub
   oc delete ns opendatahub
   oc delete -f ${MANIFESTS_DIR}/subs_odh_operator.yaml
+  if [[ $(oc get csv |grep opendatahub|awk '{print $1}'|wc -l) == 1 ]];then
+    oc delete csv $(oc get csv |grep opendatahub|awk '{print $1}') -n openshift-operators
+  fi
 fi
