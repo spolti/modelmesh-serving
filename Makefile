@@ -191,6 +191,9 @@ e2e-delete: delete
 ## ODH
 ## This deploy modelmesh using manifests in opendatahub/odh-manifests folder
 deploy-fvt-for-odh:
+ifdef IMG
+	$(eval extra_options += --image ${IMG}) 
+endif
 ifdef FORCE
 	$(eval extra_options += --force) 
 endif

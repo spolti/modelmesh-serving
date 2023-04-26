@@ -20,6 +20,21 @@ success() {
   printf "${color_green}$*${color_reset}\n" 1>&2
 }
 
+images_name=(modelmesh modelmesh-serving modelmesh-runtime-adapter rest-proxy odh-model-controller)
+
+checkAllowedImage() {  
+  local img_name=$1
+  for img in ${images_name[@]}
+  do
+    if [[ $img == ${img_name} ]];then    
+      return 0
+      break
+    fi
+  done
+
+  return 1
+}
+
 check_pod_status() {
   local -r JSONPATH="{range .items[*]}{'\n'}{@.metadata.name}:{@.status.phase}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}"
   local -r pod_selector="$1"

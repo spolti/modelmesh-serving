@@ -4,10 +4,20 @@ source "$(dirname "$0")/env.sh"
 source "$(dirname "$0")/utils.sh"
 
 tag=$1
+img_name=$2
+img_url=$3
 
-export TRITON_SERVER=nvcr.io/nvidia/tritonserver:21.06.1-py3 
-export ML_SERVER=seldonio/mlserver:0.5.2 
-export TORCHSERVE=pytorch/torchserve:0.6.0-cpu
+TRITON_SERVER_IMG=nvcr.io/nvidia/tritonserver
+ML_SERVER_IMG=seldonio/mlserver
+TORCHSERVE_IMG=pytorch/torchserve
+
+TRITON_SERVER_TAG=$(cat ${MANIFESTS_DIR}/runtimes/kustomization.yaml |grep ${TRITON_SERVER_IMG} -A1|grep "newTag"|cut -d: -f2|tr -d " ")
+ML_SERVER_TAG=$(cat ${MANIFESTS_DIR}/runtimes/kustomization.yaml |grep ${ML_SERVER_IMG} -A1|grep "newTag"|cut -d: -f2|tr -d " ")
+TORCHSERVE_TAG=$(cat ${MANIFESTS_DIR}/runtimes/kustomization.yaml |grep ${TORCHSERVE_IMG} -A1|grep "newTag"|cut -d: -f2|tr -d " ")
+
+export TRITON_SERVER=${TRITON_SERVER_IMG}:${TRITON_SERVER_TAG}
+export ML_SERVER=${ML_SERVER_IMG}:${ML_SERVER_TAG}
+export TORCHSERVE=${TORCHSERVE_IMG}:${TORCHSERVE_TAG}
 export OPENVINO=$(cat $MANIFESTS_DIR/params.env |grep odh-openvino|cut -d= -f2)
 export MODELMESH=$(cat $MANIFESTS_DIR/params.env |grep odh-modelmesh=|cut -d= -f2)
 export MODELMESH_RUNTIME=$(cat $MANIFESTS_DIR/params.env |grep odh-modelmesh-runtime-adapter=|cut -d= -f2)
@@ -24,6 +34,25 @@ elif [[ ${tag} == "stable" ]]; then
   export MODELMESH=quay.io/opendatahub/modelmesh:stable
   export MODELMESH_RUNTIME=quay.io/opendatahub/modelmesh-runtime-adapter:stable
   export REST_PROXY=quay.io/opendatahub/rest-proxy:stable
+fi
+
+# You can set custom image for comoponents
+if [[ z${img_name} != z ]]; then
+  case $img_name in
+    modelmesh)
+      export MODELMESH=${img_url}
+      ;;
+    modelmesh-runtime-adapter)
+      export MODELMESH_RUNTIME=${img_url}
+      ;;
+    rest-proxy)
+      export REST_PROXY=${img_url}
+      ;;
+    *)
+      echo "No components found"
+      exit 1
+      ;;
+  esac
 fi
 
 images=(${TRITON_SERVER} ${ML_SERVER} ${OPENVINO} ${TORCHSERVE} ${MODELMESH} ${MODELMESH_RUNTIME} ${REST_PROXY})

@@ -9,6 +9,9 @@ namespace=modelmesh-serving
 ctrlnamespace=${namespace}
 tag=none
 force=false
+img_map=none
+img_name=
+img_url=
 
 function showHelp() {
   echo "usage: $0 [flags]"
@@ -16,6 +19,7 @@ function showHelp() {
   echo "Flags:"
   echo "  -n, --namespace                (optional) Kubernetes namespace to deploy FVT test components to(default modelmesh-serving)."
   echo "  -c, --ctrl-namespace           (optional) Kubernetes namespace to deploy modelmesh controller to(default modelmesh-serving)."
+  echo "  -i, --image                    (optional) Set custom image (default none)."
   echo "  -t, --tag                      (optional) Set tag fast,stable to change images quickly(default none)."
   echo "  -f, --force                    (optional) Copy fvt manifests from opendatahub/odh-manifest(default false)."
   echo
@@ -36,7 +40,13 @@ while (($# > 0)); do
   -c | --c | -ctrl-namespace | --ctrl-namespace)
     shift
     ctrlnamespace="$1"
-    ;;    
+    ;;   
+  -i | --i | -image | --image)
+    shift
+    img_map="$1"
+    img_name=$(echo ${img_map}|cut -d'=' -f1)
+    img_url=$(echo ${img_map}|cut -d'=' -f2)
+    ;;      
   -t | --t | -tag | --tag)
     shift
     tag="$1"
@@ -50,6 +60,14 @@ while (($# > 0)); do
   esac
   shift
 done    
+
+allowedImgName=false
+if [[ ${img_map} != none ]]; then
+  checkAllowedImage ${img_name}
+  if [[ $? == 0 ]]; then
+    allowedImgName=true
+  fi
+fi
 
 # Copy fvt tests manifests into manifest folder
 if [[ ! -d $MANIFESTS_DIR/fvt ]] || [[ ${force} == "true" ]];then
@@ -85,7 +103,11 @@ fi
 oc project $namespace|| oc new-project $namespace
 
 # Download images on each node
-$SCRIPT_DIR/download_images_on_nodes.sh $tag
+if [[ ${allowedImgName} == "true" ]] && [[ ${tag} != "none" ]] ; then
+  $SCRIPT_DIR/download_images_on_nodes.sh $tag $img_name $img_url
+else
+  $SCRIPT_DIR/download_images_on_nodes.sh $tag
+fi
 
 # Deploy NFS Provisioner
 # $SCRIPT_DIR/deploy_nfs_provisioner.sh $namespace
@@ -117,4 +139,3 @@ oc get clusterrolebinding ${namespace}-modelmesh-serving-sa-auth-delegator || se
 
 # Create a SA "prometheus-ns-access" becuase odh-model-controller create rolebinding "prometheus-ns-access" with the SA where namespaces have modelmesh-enabled=true label
 oc get sa prometheus-ns-access -n  ${namespace}  ||oc create sa prometheus-ns-access -n  ${namespace}  
-
