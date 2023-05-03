@@ -3,22 +3,20 @@
 **Base variables**
 
 ```
-export OCP_TOKEN=sha256~5x4tmp4OE2zkHRux5lUV1h5ujtWthN5ESfKLdgf7WxA; export OCP_ADDRESS=api.jlee-test.oylv.p1.openshiftapps.com:6443
+export OCP_TOKEN=sha256~XXXX; export OCP_ADDRESS=api.XXXX.com:6443
 ```
+## Target: deploy-mm-for-odh
 
-## deploy-mm-for-odh
-
-This is for deploying modelmesh using odh manifests. By default, it is using kfdef cli but if you set `OP_KFDEF` to true, it will deploy opendatahub operator and the operator will reconcile the kfdef file.
+This is for deploying modelmesh using odh manifests. By default, it is using kfctl cli but if you set `OP_KFDEF` to true, it will deploy opendatahub operator and the operator will reconcile the kfdef file.
 
 **Using custom odh manifests**
 
-This will pull this repository for the odh manifests:
-
-- `https://api.github.com/repos/TEST/modelmesh-serving/tarball/custom_odh`
-
+For example, if you want to use the manifests under this repo: `https://api.github.com/repos/TEST/modelmesh-serving/tarball/custom_odh`
+You can set these variable with the target:
 ```
 USER=TEST BRANCH=custom_odh CONTROLLERNAMESPACE=opendatahub make deploy-mm-for-odh
 ```
+*(Note)* Default value for `USER`, `BRANCH`, `CONTROLLERNAMESPACE` is `opendatahub-io`, `main`, `opendatahub`.
 
 **Deploy fast/stable images**
 
@@ -34,25 +32,26 @@ TAG=stable CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving make depl
 
 You can set a custom image only for specific component. The others will use fast image. (modelmesh/modelmesh-controller/modelmesh-runtime-adapter/rest-proxy/ odh-model-controller)
 
+(ex) modelmesh
 ```
 TAG=fast CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving CUSTOM_IMG=modelmesh=quay.io/opendatahub/modelmesh:v0.9.3-auth make deploy-mm-for-odh
 ```
 
-## deploy-fvt-for-odh
+## Target: deploy-fvt-for-odh
 
-This is for deploying fvt related objects such as minio and preparing fvt test like downloading related images priorly.
+This target help deploying fvt related objects such as minio, pvc and preparing fvt test like downloading related images priorly.
 
 **Default**
-It will deploy the objects in the NAMESPACE
+It will deploy the fvt objects in the `NAMESPACE`.
 
 ```
 NAMESPACE=modelmesh-serving make deploy-fvt-for-odh
 ```
 
-**Deploy fast/stable images**
+**Download fast/stable images**
 
 ```
-TAG=fast NAMESPACE=modelmesh-serving  make deploy-fvt-for-odh
+TAG=fast NAMESPACE=modelmesh-serving make deploy-fvt-for-odh
 
 or
 
@@ -61,13 +60,14 @@ TAG=stable NAMESPACE=modelmesh-serving  make deploy-fvt-for-odh
 
 You can set a custom image only for specific component. The others will use fast image. (modelmesh/modelmesh-controller/modelmesh-runtime-adapter/rest-proxy/ odh-model-controller)
 
+(ex) modelmesh + other fast images
 ```
 TAG=fast NAMESPACE=modelmesh-serving CUSTOM_IMG=modelmesh=quay.io/opendatahub/modelmesh:v0.9.3-auth make deploy-fvt-for-odh
 ```
 
-## E2E Test
+## Target: e2e-test-for-odh (E2E Test)
 
-This is for deploying modelmesh, minio and fvt objects. Then it will trigger to start fvt test.
+This is an all-in-one target for deploying modelmesh, minio, and creating FVT objects. When FVT test preparation is done, it will trigger to start the FVT test.
 
 **Default**
 
