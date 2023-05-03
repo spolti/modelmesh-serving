@@ -36,21 +36,44 @@ kustomize build opendatahub/odh-manifests/model-mesh/base  | oc create -f -
 
 **Kfctl: odh-manifests(kfdef)**
 
-This will deploy modelmesh controller with [kfdef](../kfdef.yaml) file using kfcfl cli
+This will deploy modelmesh controller with [kfdef](../kfdef.yaml) file using kfcfl cli.
 
+In order to create kfdef directly with the file, you have to change some replacable variables: controller-namespace, mm_user, mm_branch
 ```
-kfctl build -V -f ./opendatahub/kfdef/kfdef.yaml   -d | oc create -f -
+export ctrlnamespace=opendatahub
+export mm_user=opendatahub-io
+export mm_branch=main
+
+sed "s/%controller-namespace%/${ctrlnamespace}/g" ./opendatahub/kfdef/kfdef.yaml | sed "s/%mm_user%/${mm_user}/g" | sed "s/%mm_branch%/${mm_branch}/g"  |tee /tmp/kfdef.yaml
+kfctl build -d -V -f /tmp/kfdef.yaml  | oc create -f -
 ```
 
-**opendatahub operator: odh-manifest(kfdef)**
+Using Makefile, you don't need to set these variables because it has default value for each variable.
+```
+make deploy-mm-for-odh
+```
+**Opendatahub operator: odh-manifest(kfdef)**
 
 This will deploy modelmesh controller with [kfdef](./kfdef.yaml) file using kfcfl cli
+In order to create kfdef directly with the file, you have to change some replacable variables: controller-namespace, mm_user, mm_branch
 
 ```
+export ctrlnamespace=opendatahub
+export mm_user=opendatahub-io
+export mm_branch=main
+
 oc create -f opendatahub/scripts/manifests/subs_odh_operator.yaml
 
+oc new-project ${ctrlnamespace}
+
  # There are 3 options (kfdef.yaml/kfdef-fast.yaml/kfdef-stable.yaml)
-oc create -f ./opendatahub/kfdef/kfdef.yaml
+sed "s/%controller-namespace%/${ctrlnamespace}/g" ./opendatahub/kfdef/kfdef.yaml | sed "s/%mm_user%/${mm_user}/g" | sed "s/%mm_branch%/${mm_branch}/g"  |tee /tmp/kfdef.yaml
+oc create -f /tmp/kfdef.yaml
+```
+
+Using Makefile, you don't need to set these variables because it has default value for each variable.
+```
+make deploy-mm-for-odh
 ```
 
 ## How to test manifests?
@@ -139,9 +162,9 @@ cd modelmesh-serving
 oc new-project opendatahub
 
 rm /tmp/modelmesh-e2e -rf
-sed "s/%controller-namespace%/${ctrlnamespace}/g" opendatahub/kfdef/kfdef-local.yaml  > /tmp/modelmesh-e2e/kfdef.yaml
+sed "s/%controller-namespace%/${ctrlnamespace}/g" opendatahub/kfdef/kfdef-local.yaml  > /tmp/kfdef.yaml
 
-kfctl build -V -f /tmp/modelmesh-e2e/kfdef.yaml -d | oc create -f -
+kfctl build -V -f /tmp/kfdef.yaml -d | oc create -f -
 ```
 
 **Deploy required components for fvt test(minio/pvc)**
@@ -171,27 +194,30 @@ After it passes fvt test, you need to send all changes to your repo.
 
 ```
  # this will be used for repos.uri
+ #      export mm_user=Jooho
+ #      export mm_branch=restructed_odh_manifests
  # (ex)      uri: https://api.github.com/repos/%mm_user%/modelmesh-serving/tarball/%mm_branch%
  #           uri: https://api.github.com/repos/Jooho/modelmesh-serving/tarball/restructed_odh_manifests
-export mm_user=Jooho
-export mm_branch=restructed_odh_manifests
+export mm_user=opendatahub-io
+export mm_branch=main
+export ctrlnamespace=opendatahub
 ```
 
 **Deploy ModelMesh Controller**
 
 ```
 oc create -f opendatahub/scripts/manifests/subs_odh_operator.yaml
-
+sed "s/%controller-namespace%/${ctrlnamespace}/g" opendatahub/kfdef/kfdef-local.yaml  > /tmp/kfdef.yaml
 oc project opendatahub || oc new-project opendatahub
 
  # There are 3 options (kfdef.yaml/kfdef-fast.yaml/kfdef-stable.yaml)
-sed "s/%mm_user%/${mm_user}/g" opendatahub/kfdef/kfdef.yaml | sed "s/%mm_branch%/${mm_branch}/g" |oc create -n opendatahub -f -
+sed "s/%mm_user%/${mm_user}/g" opendatahub/kfdef/kfdef.yaml | sed "s/%mm_branch%/${mm_branch}/g" | sed "s/%controller-namespace%/${ctrlnamespace}/g" |oc create -f -
 
  # fast (main branch)
- # sed "s/%mm_user%/${mm_user}/g" opendatahub/kfdef/kfdef-stable.yaml | sed "s/%mm_branch%/${mm_branch}/g" | oc create -n opendatahub -f  opendatahub/kfdef/kfdef-fast.yaml
+ # sed "s/%mm_user%/${mm_user}/g" opendatahub/kfdef/kfdef-stable.yaml | sed "s/%mm_branch%/${mm_branch}/g" | sed "s/%controller-namespace%/${ctrlnamespace}/g" | oc create -f opendatahub/kfdef/kfdef-fast.yaml
 
  # stable (release branch)
- # sed "s/%mm_user%/${mm_user}/g" opendatahub/kfdef/kfdef-stable.yaml| sed "s/%mm_branch%/${mm_branch}/g" | oc create -n opendatahub -f
+ # sed "s/%mm_user%/${mm_user}/g" opendatahub/kfdef/kfdef-stable.yaml| sed "s/%mm_branch%/${mm_branch}/g" | sed "s/%controller-namespace%/${ctrlnamespace}/g" |oc create -f
 ```
 
 **Deploy required components for fvt test(minio/pvc)**
@@ -221,6 +247,7 @@ C_MM_TEST=true C_MM_CTRL_OPS=true make cleanup-for-odh
 ### E2E Test with odh manifests
 
 This is all-in-one script that includes deploying modelmesh controller, fvt related objects and doing fvt test.
+If you want to change repo uri, please refer [this doc](./makefile-cheatsheet.md#e2e-test)
 
 ```
 CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=true make e2e-test-for-odh
