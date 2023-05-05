@@ -820,7 +820,7 @@ func (fvt *FVTClient) StartWatchingDeploys() watch.Interface {
 func (fvt *FVTClient) ListHPAs() hpav2beta2.HorizontalPodAutoscalerList {
 	var err error
 
-	listOptions := metav1.ListOptions{LabelSelector: "app.kubernetes.io/managed-by=modelmesh-controller", TimeoutSeconds: &DefaultTimeout}
+	listOptions := metav1.ListOptions{LabelSelector: "component=predictor", TimeoutSeconds: &DefaultTimeout}
 	u, err := fvt.Resource(gvrHPA).Namespace(fvt.namespace).List(context.TODO(), listOptions)
 	Expect(err).ToNot(HaveOccurred())
 

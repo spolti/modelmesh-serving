@@ -184,15 +184,7 @@ repeat-fvt:
 
 # Openshift CI
 ## Upstream
-## This deploy modelmesh using manifests in config folder
-deploy-release-dev-mode-fvt:		
-ifdef MODELMESH_SERVING_IMAGE
-	./scripts/install.sh --namespace ${NAMESPACE} --install-config-path config --dev-mode-logging --fvt --modelmesh-serving-image ${MODELMESH_SERVING_IMAGE}
-else
-	./scripts/install.sh --namespace ${NAMESPACE} --install-config-path config --dev-mode-logging --fvt
-endif
-
-# Pre-download required images.
+## Pre-download required images.
 download-images:
 	oc project ${NAMESPACE} || oc new-project ${NAMESPACE} 
 	./scripts/download-images-on-nodes.sh

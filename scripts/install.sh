@@ -363,11 +363,6 @@ fi
 
 kustomize build default | kubectl apply -f -
 
-if [[ ! -z $modelmesh_serving_image ]]; then 
-  mv manager/kustomization.yaml.ori  manager/kustomization.yaml
-fi
-
-
 if [[ $dev_mode_logging == "true" ]]; then
   info "Enabling development mode logging"
   kubectl set env deploy/modelmesh-controller DEV_MODE_LOGGING=true
