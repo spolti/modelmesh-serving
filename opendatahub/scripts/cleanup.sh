@@ -26,6 +26,9 @@ fi
 if [[ -n $C_MM_CTRL_KFCTL ]] || [[ -n $C_FULL ]]; then
   kfctl build -V -f ${KFDEF_FILE} -d | oc delete -f -
   rm -rf $OPENDATAHUB_DIR/.cache $OPENDATAHUB_DIR/kustomize
+  rm -rf /tmp/modelmesh-e2e/.cache /tmp/modelmesh-e2e/kustomize
+  rm -rf /tmp/.cache /tmp/kustomize
+  rm -rf /tmp/odh-manifests.gzip 
   oc delete ns opendatahub
 fi
 

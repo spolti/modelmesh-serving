@@ -2,7 +2,7 @@ apiVersion: kfdef.apps.kubeflow.org/v1
 kind: KfDef
 metadata:
   name: opendatahub
-  namespace: %controller-namespace%  
+  namespace: %controller-namespace%
 spec:
   applications:
     - kustomizeConfig:
@@ -11,7 +11,7 @@ spec:
           path: odh-common
       name: odh-common
     - kustomizeConfig:
-        parameters:    
+        parameters:
           - name: monitoring-namespace
             value: %controller-namespace%
         repoRef:

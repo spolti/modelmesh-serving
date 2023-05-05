@@ -20,7 +20,7 @@ success() {
   printf "${color_green}$*${color_reset}\n" 1>&2
 }
 
-images_name=(modelmesh modelmesh-controller modelmesh-runtime-adapter rest-proxy odh-model-controller)
+images_name=(modelmesh odh-modelmesh-controller  modelmesh-runtime-adapter rest-proxy odh-model-controller)
 
 checkAllowedImage() {  
   local img_name=$1
