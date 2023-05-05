@@ -144,7 +144,7 @@ CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=t
 **Clean Up**
 
 ```
-C_MM_TEST=true C_MM_CTRL_KUSTOMIZE=true make cleanup-for-odh
+CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving C_MM_TEST=true C_MM_CTRL_KUSTOMIZE=true make cleanup-for-odh
 ```
 
 ### Local odh-manifests with kfctl
@@ -186,7 +186,7 @@ CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=t
 **Clean Up**
 
 ```
-C_MM_TEST=true C_MM_CTRL_KFCTL=true make cleanup-for-odh
+CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving C_MM_TEST=true C_MM_CTRL_KFCTL=true make cleanup-for-odh
 ```
 
 If FVT test failed, retry 1~2 times more.
@@ -245,7 +245,7 @@ If all 3 manifests validations passes, you can compare this manifests with odh-m
 **Clean Up**
 
 ```
-C_MM_TEST=true C_MM_CTRL_OPS=true make cleanup-for-odh
+CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving C_MM_TEST=true C_MM_CTRL_OPS=true make cleanup-for-odh
 ```
 
 ### E2E Test with odh manifests
@@ -262,5 +262,5 @@ CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=t
 If you finish all tests, you can delete all objects related this test.
 
 ```
-C_FULL=true make cleanup-for-odh
+CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving C_FULL=true make cleanup-for-odh
 ```

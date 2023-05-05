@@ -112,6 +112,14 @@ OP_KFDEF=true CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESP
 
 The following environmental variables can be mixed up.
 
+**Common**
+
+If you used other namespace for controller or fvt test, you should set the namespace with the following variables.
+
+```
+CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving  # This is default value
+```
+
 **Delete modelmesh-controller deployed by kustomize manifests**
 
 ```

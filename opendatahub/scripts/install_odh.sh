@@ -142,6 +142,9 @@ else
   info ".. Downloading kfctl"
   curl -sSLf --output ./kfctl.tar.gz   https://github.com/kubeflow/kfctl/releases/download/v1.2.0/kfctl_v1.2.0-0-gbc038f9_linux.tar.gz ; tar xvf kfctl.tar.gz
 
+  info ".. Archiving odh-manifests"
+  cd ..;tar czvf /tmp/odh-manifests.gzip modelmesh-serving/opendatahub/odh-manifests/;cd -
+  
   info ".. Deploying ModelMesh by kfctl"
   ./kfctl build -V -f ${KFDEF_FILE} -d | oc create -n ${ctrlnamespace} -f -
 fi
