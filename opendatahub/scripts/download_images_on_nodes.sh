@@ -52,8 +52,8 @@ if [[ z${img_name} != z ]]; then
       info ".. rest-proxy image is set"
       export REST_PROXY=${img_url}
       ;;
-    modelmesh-controller)
-      info ".. modelmesh-controller image is set"
+    odh-modelmesh-controller)
+      info ".. odh-modelmesh-controller image is set"
       ;;
     odh-model-controller)
       info ".. odh-model-controller image is set"

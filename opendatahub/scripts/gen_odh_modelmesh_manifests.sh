@@ -20,6 +20,8 @@ MODELMESH_CONTROLLER_BRANCH=main
 MODELMESH_CONTROLLER_GIT=https://github.com/opendatahub-io/modelmesh-serving.git
 MODELMESH_CONTROLLER_DIR=${TARGET_DIR}/model-mesh_templates/odh-modelmesh-controller
 
+copy_current_config_dir=$COPY_CC_DIR
+
 info "Generate opendatahub manifest in the ${TARGET_DIR}"
 echo "TARGET DIR: ${TARGET_DIR}"
 echo "--------------------------------------------------"
@@ -44,17 +46,24 @@ fi
 echo -e "\r ✓"
 
 
-if [[ ! -d ${TARGET_DIR}/odh-modelmesh-controller ]]; then
-  echo -n ".. Git Cloning odh-modelmesh-controller to ${TARGET_DIR} folder"
-  git clone --quiet --branch $MODELMESH_CONTROLLER_BRANCH $MODELMESH_CONTROLLER_GIT odh-modelmesh-controller
-else
-  echo -n ".. odh-modelmesh-controller folder exist,it will reuse the existing folder"
+if [[ $copy_current_config_dir == "" ]]; then
+  if [[ ! -d ${TARGET_DIR}/odh-modelmesh-controller ]]  then
+      echo -n ".. Git Cloning odh-modelmesh-controller to ${TARGET_DIR} folder"
+      git clone --quiet --branch $MODELMESH_CONTROLLER_BRANCH $MODELMESH_CONTROLLER_GIT odh-modelmesh-controller
+  else
+    echo -n ".. odh-modelmesh-controller folder exist,it will reuse the existing folder"
+  fi
+  echo -e "\r ✓"
 fi
-echo -e "\r ✓"
 
 # Copy manifests templates
-echo -n ".. Copying the odh-modelmesh-controller manifests to model-mesh_templates folder"
-cp -R odh-modelmesh-controller/config/*  ${MODELMESH_CONTROLLER_DIR}/.
+if [[ $copy_current_config_dir == "" ]]; then
+  echo -n ".. Copying the odh-modelmesh-controller manifests to model-mesh_templates folder"
+  cp -R odh-modelmesh-controller/config/*  ${MODELMESH_CONTROLLER_DIR}/.
+else 
+  echo -n ".. Copy config folder to ${TARGET_DIR} folder"
+  cp -R ${OPENDATAHUB_DIR}/../config/*  ${MODELMESH_CONTROLLER_DIR}/.
+fi
 echo -e "\r ✓"
 
 # Update files for Opendatahub
@@ -94,6 +103,29 @@ echo -n ".. Add trustAI option into config-defaults.yaml"
 yq eval '."payloadProcessors" = ""'  -i ${MODELMESH_CONTROLLER_DIR}/default/config-defaults.yaml
 echo -e "\r ✓"
 
+echo -n ".. Remove CertManager related from default/kustomization.yaml"
+sed '/certmanager/d' -i ${MODELMESH_CONTROLLER_DIR}/default/kustomization.yaml
+
+licenseNum=$(grep -n vars ${MODELMESH_CONTROLLER_DIR}/default/kustomization.yaml |cut -d':' -f1)
+configMapGeneratorStartLine=$(grep -n configMapGenerator  ${MODELMESH_CONTROLLER_DIR}/default/kustomization.yaml |cut -d':' -f1)
+configMapGeneratorBeforeLine=$((configMapGeneratorStartLine-1))
+sed -i "${licenseNum},${configMapGeneratorBeforeLine}d"  ${MODELMESH_CONTROLLER_DIR}/default/kustomization.yaml
+
+# remove webhookcainjection_patch.yaml
+sed -i '/webhookcainjection_patch.yaml/d'  ${MODELMESH_CONTROLLER_DIR}/default/kustomization.yaml
+echo -e "\r ✓"
+
+echo -n ".. Add serving-cert-secret-name to webhook/service.yaml"
+yq eval '.metadata.annotations."service.beta.openshift.io/serving-cert-secret-name"="modelmesh-webhook-server-cert"' -i  ${MODELMESH_CONTROLLER_DIR}/webhook/service.yaml
+echo -e "\r ✓"
+
+echo -n ".. Add inject-cabundle into webhook/kustomization.yaml"
+yq eval '.commonAnnotations += {"service.beta.openshift.io/inject-cabundle": "true"}' -i ${MODELMESH_CONTROLLER_DIR}/webhook/kustomization.yaml
+
+echo -n ".. Remove namespace "
+sed '/namespace/d' -i  ${MODELMESH_CONTROLLER_DIR}/webhook/service.yaml
+echo -e "\r ✓"
+
 
 
 IS_IDENTICAL=$(diff -r ${TARGET_DIR}/model-mesh_templates/odh-modelmesh-controller/ ${ODH_MANIFESTS_DIR}/model-mesh/odh-modelmesh-controller/)
@@ -101,8 +133,8 @@ IS_IDENTICAL=$(diff -r ${TARGET_DIR}/model-mesh_templates/odh-modelmesh-controll
 if [[ z$IS_IDENTICAL == z ]]; then
   success "New Manifests are identical with previous one. You don't need to send any PR to ODH-MANIFESTS repo"
 else
-  info "diff -r ${TARGET_DIR}/model-mesh_templates/odh-modelmesh-controller/ ${ODH_MANIFESTS_DIR}/model-mesh/odh-modelmesh-controller/"
+  info "diff -ruN ${ODH_MANIFESTS_DIR}/model-mesh/odh-modelmesh-controller/ ${TARGET_DIR}/model-mesh_templates/odh-modelmesh-controller/ "
   echo
-
+  
   die "There are some changes between new manifests and previous one. You should validate the new manifests. If it works, you need to update opendatahub/odh-manifests/model-mesh and opendatahub/odh-manifests/model-mesh_templates"
 fi

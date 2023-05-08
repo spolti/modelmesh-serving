@@ -18,10 +18,10 @@ function showHelp() {
   echo
   echo "Flags:"
   echo "  -c, --ctrl-namespace           (optional) Kubernetes namespace to deploy modelmesh controller to(default opendatahub)."
-  echo "  -t, --tag                      (optional) Set tag fast,stable to change images quickly(default none)."
+  echo "  -t, --tag                      (optional) Set tag fast,stable,local to change images quickly(default none)."
   echo "  -i, --image                    (optional) Set custom image (default none)."
   echo "  -op, --operator                (optional) Install opendatahub operator"
-  echo "  -u, --user                     (optional) Set odh-manifests repo user to be used for deployment(default opendatahub-io) - modelmesh/modelmesh-controller/modelmesh-runtime-adapter/rest-proxy/odh-model-controller."
+  echo "  -u, --user                     (optional) Set odh-manifests repo user to be used for deployment(default opendatahub-io) - modelmesh/odh-modelmesh-controller/modelmesh-runtime-adapter/rest-proxy/odh-model-controller."
   echo "                                   ex) -u opendatahub-io"
   echo "                                   meaning > https://api.github.com/repos/opendatahub-io"
   echo "  -b, --branch                    (optional) Set odh-manifests repo branch to be used for deployment (default main)."
@@ -97,6 +97,9 @@ elif [[ ${tag} == "stable" ]]; then
 elif [[ ${tag} == "none" ]]; then
   info "TAG is NOT set"
   cp $OPENDATAHUB_DIR/kfdef/kfdef.yaml  ${KFDEF_FILE}
+elif [[ ${tag} == "local" ]]; then
+  info "TAG=local is set"
+  cp $OPENDATAHUB_DIR/kfdef/kfdef-local.yaml  ${KFDEF_FILE}
 else
   die "Unknown tag: ${tag}"
 fi
@@ -108,13 +111,15 @@ sed "s/%mm_branch%/${mm_branch}/g" -i ${KFDEF_FILE}
 sed "s/%controller-namespace%/${ctrlnamespace}/g" -i ${KFDEF_FILE}
 
 # If the image is in allowed image list, update the img url
-if [[ ${allowedImgName} == "true" ]] && [[ ${tag} != "none" ]] ; then
-  sed "s+quay.io/.*${img_name}:.*$+${img_url}+g" -i ${KFDEF_FILE}
-elif [[ ${allowedImgName} == "true" ]] && [[ ${tag} == "none" ]]; then 
-  custom_name="${img_name}"
-  custom_value="${img_url}"
+if [[ ${allowedImgName} == "true" ]]; then
+  if  [[ (${tag} == "fast") || (${tag} == "stable") ]] ; then
+    sed "s+quay.io/.*${img_name}:.*$+${img_url}+g" -i ${KFDEF_FILE}
+  elif [[ ${tag} == "none" ]] ||[[ ${tag} == "local" ]]; then 
+    custom_name="${img_name}"
+    custom_value="${img_url}"
 
-  yq eval '.spec.applications[1].kustomizeConfig.parameters += [{"name": "'$custom_name'", "value": "'$custom_value'"}]' -i ${KFDEF_FILE}
+    yq eval '.spec.applications[1].kustomizeConfig.parameters += [{"name": "'$custom_name'", "value": "'$custom_value'"}]' -i ${KFDEF_FILE}
+  fi
 fi
 
 oc project ${ctrlnamespace} || oc new-project ${ctrlnamespace}
@@ -127,8 +132,8 @@ if [[ ${odhoperator} == "true" ]]; then
   do
     info ".. Waiting for opendatahub operator running"
     op_ready=$(oc get csv -n ${ctrlnamespace} |grep opendatahub|grep Succeeded|wc -l)
-    echo $op_ready
-    sleep 3
+    echo ".. Will check it 30 Secs later"
+    sleep 30
   done
   info ".. Opendatahub operator is ready"
   info ".. Creating the kfdef in ${ctrlnamespace}"
@@ -137,6 +142,9 @@ else
   info ".. Downloading kfctl"
   curl -sSLf --output ./kfctl.tar.gz   https://github.com/kubeflow/kfctl/releases/download/v1.2.0/kfctl_v1.2.0-0-gbc038f9_linux.tar.gz ; tar xvf kfctl.tar.gz
 
+  info ".. Archiving odh-manifests"
+  cd ..;tar czvf /tmp/odh-manifests.gzip modelmesh-serving/opendatahub/odh-manifests/;cd -
+  
   info ".. Deploying ModelMesh by kfctl"
   ./kfctl build -V -f ${KFDEF_FILE} -d | oc create -n ${ctrlnamespace} -f -
 fi

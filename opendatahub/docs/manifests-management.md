@@ -39,6 +39,7 @@ kustomize build opendatahub/odh-manifests/model-mesh/base  | oc create -f -
 This will deploy modelmesh controller with [kfdef](../kfdef.yaml) file using kfcfl cli.
 
 In order to create kfdef directly with the file, you have to change some replacable variables: controller-namespace, mm_user, mm_branch
+
 ```
 export ctrlnamespace=opendatahub
 export mm_user=opendatahub-io
@@ -49,9 +50,11 @@ kfctl build -d -V -f /tmp/kfdef.yaml  | oc create -f -
 ```
 
 Using Makefile, you don't need to set these variables because it has default value for each variable.
+
 ```
 make deploy-mm-for-odh
 ```
+
 **Opendatahub operator: odh-manifest(kfdef)**
 
 This will deploy modelmesh controller with [kfdef](./kfdef.yaml) file using kfcfl cli
@@ -72,6 +75,7 @@ oc create -f /tmp/kfdef.yaml
 ```
 
 Using Makefile, you don't need to set these variables because it has default value for each variable.
+
 ```
 make deploy-mm-for-odh
 ```
@@ -140,7 +144,7 @@ CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=t
 **Clean Up**
 
 ```
-C_MM_TEST=true C_MM_CTRL_KUSTOMIZE=true make cleanup-for-odh
+CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving C_MM_TEST=true C_MM_CTRL_KUSTOMIZE=true make cleanup-for-odh
 ```
 
 ### Local odh-manifests with kfctl
@@ -182,7 +186,7 @@ CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=t
 **Clean Up**
 
 ```
-C_MM_TEST=true C_MM_CTRL_KFCTL=true make cleanup-for-odh
+CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving C_MM_TEST=true C_MM_CTRL_KFCTL=true make cleanup-for-odh
 ```
 
 If FVT test failed, retry 1~2 times more.
@@ -241,7 +245,7 @@ If all 3 manifests validations passes, you can compare this manifests with odh-m
 **Clean Up**
 
 ```
-C_MM_TEST=true C_MM_CTRL_OPS=true make cleanup-for-odh
+CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving C_MM_TEST=true C_MM_CTRL_OPS=true make cleanup-for-odh
 ```
 
 ### E2E Test with odh manifests
@@ -258,5 +262,5 @@ CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=t
 If you finish all tests, you can delete all objects related this test.
 
 ```
-C_FULL=true make cleanup-for-odh
+CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving C_FULL=true make cleanup-for-odh
 ```

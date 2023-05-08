@@ -82,6 +82,7 @@ var MutualTLSConfig = map[string]interface{}{
 
 const (
 	ServingRuntimeKind         = "ServingRuntime"
+	ClusterServingRuntimeKind  = "ClusterServingRuntime"
 	PredictorKind              = "Predictor"
 	IsvcKind                   = "InferenceService"
 	ConfigMapKind              = "ConfigMap"

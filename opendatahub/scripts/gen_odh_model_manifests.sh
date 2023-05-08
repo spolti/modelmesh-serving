@@ -45,17 +45,15 @@ echo -e "\r ✓"
 
 # Copy manifests templates
 if [[ ! -d ${TARGET_DIR}/model-mesh_templates ]]; then
-  echo -n ".. Copying the odh-model-controller manifests to model-mesh_templates folder"
-  mkdir -p ${ODH_MODEL_CONTROLLER_DIR}
-  cp -R odh-model-controller/config/*  ${ODH_MODEL_CONTROLLER_DIR}/.
-  echo -e "\r ✓"
-
   echo -n ".. Copying the model-mesh_templates to ${TARGET_DIR} folder"
   cp -R $ODH_MANIFESTS_DIR/model-mesh_templates/* ${TARGET_DIR}/model-mesh_templates
-
+  echo -e "\r ✓"
 else
   echo -n ".. model-mesh_template folder exist, it will reuse the existing folder"
 fi
+
+echo -n ".. Copying the odh-model-controller manifests to model-mesh_templates folder"
+cp -R odh-model-controller/config/*  ${ODH_MODEL_CONTROLLER_DIR}/.
 echo -e "\r ✓"
 
 echo -n ".. Delete crd folder"
@@ -98,7 +96,7 @@ IS_IDENTICAL=$(diff -r ${TARGET_DIR}/model-mesh_templates/odh-model-controller/ 
 if [[ z$IS_IDENTICAL == z ]]; then
   success "New Manifests are identical with previous one. You don't need to send any PR to ODH-MANIFESTS repo"
 else
-  info "diff -r ${TARGET_DIR}/model-mesh_templates/odh-model-controller/ ${ODH_MANIFESTS_DIR}/model-mesh/odh-model-controller/"
+  info "diff -ruN ${ODH_MANIFESTS_DIR}/model-mesh/odh-model-controller/ ${TARGET_DIR}/model-mesh_templates/odh-model-controller/"
   echo
 
   die "There are some changes between new manifests and previous one. You should validate the new manifests. If it works, you need to update opendatahub/odh-manifests/model-mesh and opendatahub/odh-manifests/model-mesh_templates"
