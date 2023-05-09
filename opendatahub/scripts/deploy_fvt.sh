@@ -12,6 +12,8 @@ force=false
 img_map=none
 img_name=
 img_url=
+stable_manifests=false
+target_modelmesh_dir=model-mesh
 
 function showHelp() {
   echo "usage: $0 [flags]"
@@ -20,6 +22,7 @@ function showHelp() {
   echo "  -n, --namespace                (optional) Kubernetes namespace to deploy FVT test components to(default modelmesh-serving)."
   echo "  -c, --ctrl-namespace           (optional) Kubernetes namespace to deploy modelmesh controller to(default modelmesh-serving)."
   echo "  -i, --image                    (optional) Set custom image (default none)."
+  echo "  -p, --stable-manifests       (optional) Use stable manifests. By default, it will use the latest manifests (default false)."
   echo "  -t, --tag                      (optional) Set tag fast,stable to change images quickly(default none)."
   echo "  -f, --force                    (optional) Copy fvt manifests from opendatahub/odh-manifest(default false)."
   echo
@@ -53,7 +56,10 @@ while (($# > 0)); do
     ;;
   -f | --f | -force | --force)
     force=true
-    ;;     
+    ;;    
+  -p | --p | -stable-manifests | --stable-manifests)
+    stable_manifests=true
+    ;;       
   -*)
     die "Unknown option: '${1}'"
     ;;       
@@ -72,11 +78,15 @@ if [[ ${img_map} != none ]]; then
   fi
 fi
 
+if [[ ${stable_manifests} == "true" ]]; then
+  target_modelmesh_dir=model-mesh_stable
+fi
+
 # Copy fvt tests manifests into manifest folder
 if [[ ! -d $MANIFESTS_DIR/fvt ]] || [[ ${force} == "true" ]];then
   info ".. Copying fvt tests manifests into manifest folder"
   cp -R $MANIFESTS_DIR/fvt_templates $MANIFESTS_DIR/fvt
-  cp -R $ODH_MANIFESTS_DIR/model-mesh/odh-modelmesh-controller/dependencies/* $MANIFESTS_DIR/fvt/.
+  cp -R $ODH_MANIFESTS_DIR/${target_modelmesh_dir}/odh-modelmesh-controller/dependencies/* $MANIFESTS_DIR/fvt/.
   # Convert imaes to use quay.io image (avoid dockerhub pull limit)
   sed 's+kserve/modelmesh-minio-dev-examples:latest+quay.io/jooholee/minio-examples:latest+g' -i opendatahub/scripts/manifests/fvt/fvt.yaml
   sed 's+kserve/modelmesh-minio-examples:latest+quay.io/jooholee/minio-examples:latest+g' -i opendatahub/scripts/manifests/fvt/fvt.yaml
@@ -86,13 +96,13 @@ fi
 # Copy opendatahub params.env into manifests folder to get the right images
 if [[ ! -f $MANIFESTS_DIR/params.env ]] || [[ ${force} == "true" ]];then
   info ".. Copying opendatahub params.env into manifests folder to get the right images"
-  cp -R $ODH_MANIFESTS_DIR/model-mesh/base/params.env $MANIFESTS_DIR/.
+  cp -R $ODH_MANIFESTS_DIR/${target_modelmesh_dir}/base/params.env $MANIFESTS_DIR/.
 fi
 
 # The upstream use ClusterServingRuntime so this replace ClusterServingRuntime to ServingRuntime.
 if [[ ! -d $MANIFESTS_DIR/runtimes ]] || [[ ${force} == "true" ]];then
   info ".. The upstream use ClusterServingRuntime so this replace ClusterServingRuntime to ServingRuntime."
-  cp -R $ODH_MANIFESTS_DIR/model-mesh/odh-modelmesh-controller/runtimes $MANIFESTS_DIR/.
+  cp -R $ODH_MANIFESTS_DIR/${target_modelmesh_dir}/odh-modelmesh-controller/runtimes $MANIFESTS_DIR/.
   # Remove not supported runtimes
   pushd $MANIFESTS_DIR/runtimes
 
