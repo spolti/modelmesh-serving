@@ -3,8 +3,6 @@
 source "$(dirname "$0")/env.sh"
 source "$(dirname "$0")/utils.sh"
 
-
-
 tag=none
 ctrlnamespace=opendatahub
 img_map=none
@@ -13,13 +11,18 @@ img_url=
 mm_user=opendatahub-io
 mm_branch=main
 odhoperator=false
+repo_uri=local
+stable_manifests=false
+
 function showHelp() {
   echo "usage: $0 [flags]"
   echo
   echo "Flags:"
   echo "  -c, --ctrl-namespace           (optional) Kubernetes namespace to deploy modelmesh controller to(default opendatahub)."
-  echo "  -t, --tag                      (optional) Set tag fast,stable,local to change images quickly(default none)."
+  echo "  -t, --tag                      (optional) Set tag fast,stable to change images quickly(default none)."
+  echo "  -r, --repo-uri                 (optional) Set repo-uri local,remote to change repo uri to use local gzip(default local)."
   echo "  -i, --image                    (optional) Set custom image (default none)."
+  echo "  -p, --stable-manifests       (optional) Use stable manifests. By default, it will use the latest manifests (default false)."
   echo "  -op, --operator                (optional) Install opendatahub operator"
   echo "  -u, --user                     (optional) Set odh-manifests repo user to be used for deployment(default opendatahub-io) - modelmesh/odh-modelmesh-controller/modelmesh-runtime-adapter/rest-proxy/odh-model-controller."
   echo "                                   ex) -u opendatahub-io"
@@ -63,6 +66,13 @@ while (($# > 0)); do
     shift
     mm_branch="$1"
     ;;    
+  -r | --r | -repo-uri | --repo-uri)
+    shift
+    repo_uri="$1"
+    ;;   
+  -p | --p | -stable-manifests | --stable-manifests)
+    stable_manifests=true
+    ;;         
   -*)
     die "Unknown option: '${1}'"
     ;;       
@@ -96,24 +106,35 @@ elif [[ ${tag} == "stable" ]]; then
   cp $OPENDATAHUB_DIR/kfdef/kfdef-stable.yaml  ${KFDEF_FILE}
 elif [[ ${tag} == "none" ]]; then
   info "TAG is NOT set"
-  cp $OPENDATAHUB_DIR/kfdef/kfdef.yaml  ${KFDEF_FILE}
-elif [[ ${tag} == "local" ]]; then
-  info "TAG=local is set"
   cp $OPENDATAHUB_DIR/kfdef/kfdef-local.yaml  ${KFDEF_FILE}
 else
-  die "Unknown tag: ${tag}"
+  die "Unknown TAG: ${tag}"  
 fi
 echo 
 
 info ".. Updating repo uri in ${KFDEF_FILE}"
-sed "s/%mm_user%/${mm_user}/g" -i ${KFDEF_FILE} 
-sed "s/%mm_branch%/${mm_branch}/g" -i ${KFDEF_FILE}
+if [[ ${repo_uri} == "local" ]]; then
+  info "REPO-URI=local is set"
+elif [[ ${repo_uri} == "remote" ]]; then
+  info "REPO-URI=remote is set"
+  yq eval 'select(.repos[].uri == "file:///tmp/odh-manifests.gzip") | .repos[].uri = "https://api.github.com/repos/%mm_user%/modelmesh-serving/tarball/%mm_branch%"' < ${KFDEF_FILE} -i
+  sed "s/%mm_user%/${mm_user}/g" -i ${KFDEF_FILE} 
+  sed "s/%mm_branch%/${mm_branch}/g" -i ${KFDEF_FILE}
+else
+  die "Unknown REPO URI: ${repo_uri}"
+fi
 sed "s/%controller-namespace%/${ctrlnamespace}/g" -i ${KFDEF_FILE}
+echo 
+
 
 # If the image is in allowed image list, update the img url
 if [[ ${allowedImgName} == "true" ]]; then
   if  [[ (${tag} == "fast") || (${tag} == "stable") ]] ; then
-    sed "s+quay.io/.*${img_name}:.*$+${img_url}+g" -i ${KFDEF_FILE}
+    if [[ ${img_name} == "odh-modelmesh-controller" ]]; then
+      sed "s+quay.io/.*modelmesh-controller:.*$+${img_url}+g" -i ${KFDEF_FILE}
+    else
+      sed "s+quay.io/.*${img_name}:.*$+${img_url}+g" -i ${KFDEF_FILE}
+    fi
   elif [[ ${tag} == "none" ]] ||[[ ${tag} == "local" ]]; then 
     custom_name="${img_name}"
     custom_value="${img_url}"
@@ -143,8 +164,22 @@ else
   curl -sSLf --output ./kfctl.tar.gz   https://github.com/kubeflow/kfctl/releases/download/v1.2.0/kfctl_v1.2.0-0-gbc038f9_linux.tar.gz ; tar xvf kfctl.tar.gz
 
   info ".. Archiving odh-manifests"
-  cd ..;tar czvf /tmp/odh-manifests.gzip modelmesh-serving/opendatahub/odh-manifests/;cd -
+  archive_root_folder=".."
+  if [[ ${stable_manifests} == "true" ]]; then
+    info "Stable Manifest is Set"
+    archive_root_folder="/tmp"
+    archive_folder="${archive_root_folder}/modelmesh-serving"
+    rm -rf ${archive_folder}
+    mkdir ${archive_folder}
+    cp -R ./opendatahub ${archive_folder}/.
+    info "Remove Latest Manifest"
+    rm -rf ${archive_folder}/opendatahub/odh-manifests/model-mesh
+    info "Move Stable Manifest"
+    mv ${archive_folder}/opendatahub/odh-manifests/model-mesh_stable ${archive_folder}/opendatahub/odh-manifests/model-mesh
+  fi
   
+  cd ${archive_root_folder} ;tar czvf /tmp/odh-manifests.gzip modelmesh-serving/opendatahub/odh-manifests/;cd -
+
   info ".. Deploying ModelMesh by kfctl"
   ./kfctl build -V -f ${KFDEF_FILE} -d | oc create -n ${ctrlnamespace} -f -
 fi

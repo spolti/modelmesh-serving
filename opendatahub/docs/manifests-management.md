@@ -36,7 +36,7 @@ kustomize build opendatahub/odh-manifests/model-mesh/base  | oc create -f -
 
 **Kfctl: odh-manifests(kfdef)**
 
-This will deploy modelmesh controller with [kfdef](../kfdef.yaml) file using kfcfl cli.
+This will deploy modelmesh controller with [kfdef](../kfdef/kfdef.yaml) file using kfcfl cli.
 
 In order to create kfdef directly with the file, you have to change some replacable variables: controller-namespace, mm_user, mm_branch
 
@@ -57,7 +57,7 @@ make deploy-mm-for-odh
 
 **Opendatahub operator: odh-manifest(kfdef)**
 
-This will deploy modelmesh controller with [kfdef](./kfdef.yaml) file using kfcfl cli
+This will deploy modelmesh controller with [kfdef](../kfdef/kfdef.yaml) file using kfcfl cli
 In order to create kfdef directly with the file, you have to change some replacable variables: controller-namespace, mm_user, mm_branch
 
 ```

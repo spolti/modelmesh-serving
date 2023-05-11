@@ -6,6 +6,7 @@ source "$(dirname "$0")/utils.sh"
 namespace=$1 
 controllerns=$2
 nsscope=$3
+stable=$4
 
 retry=5
 count=1
@@ -21,7 +22,11 @@ fi
 
 fvt_lists=()
 ginkgo_options=""
-fvt_string=$(grep -A 1 '^fvt:$' ${makefile_path} | sed -n '2{s/^[[:blank:]]*//p;q}')
+if [[ z$stable != z ]]; then
+  fvt_string=$(grep -A 1 '^fvt-stable:$' ${makefile_path} | sed -n '2{s/^[[:blank:]]*//p;q}')
+else
+  fvt_string=$(grep -A 1 '^fvt:$' ${makefile_path} | sed -n '2{s/^[[:blank:]]*//p;q}')
+fi
 
 while IFS= read -r target; do
     fvt_lists+=("$target")

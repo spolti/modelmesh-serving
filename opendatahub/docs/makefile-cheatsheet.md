@@ -16,10 +16,12 @@ For example, if you want to use the manifests under this repo: `https://api.gith
 You can set these variable with the target:
 
 ```
-USER=TEST BRANCH=custom_odh CONTROLLERNAMESPACE=opendatahub make deploy-mm-for-odh
+MM_USER=TEST BRANCH=custom_odh REPO_URI=remote make deploy-mm-for-odh
 ```
 
-_(Note)_ Default value for `USER`, `BRANCH`, `CONTROLLERNAMESPACE` is `opendatahub-io`, `main`, `opendatahub`.
+_(Note)_ Default value for `MM_USER`, `BRANCH`, `REPO_URI` is `opendatahub-io`, `main`, `local`.
+
+If you want to use your remote repository, you must set `REPO_URI` to `remote`
 
 **Deploy fast/stable images**
 
@@ -99,13 +101,19 @@ CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving CUSTOM_IMG=modelmesh
 **Set custom repo uri**
 
 ```
-USER=Jooho BRANCH=restructed_odh_manifests CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=true make e2e-test-for-odh
+MM_USER=Jooho BRANCH=restructed_odh_manifests REPO_URI=remote  CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=true make e2e-test-for-odh
 ```
 
 **Use odh operator to deploy modelmesh**
 
 ```
 OP_KFDEF=true CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=true make e2e-test-for-odh
+```
+
+**Use stable manfiests to deploy modelmesh**
+
+```
+STABLE_MANIFESTS=true CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving NAMESPACESCOPEMODE=true make e2e-test-for-odh
 ```
 
 ## cleanup-for-odh

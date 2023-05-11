@@ -49,6 +49,8 @@ test:
 fvt:
 	ginkgo -v -procs=2 --progress --fail-fast fvt/predictor fvt/scaleToZero fvt/storage fvt/hpa --timeout=50m
 
+fvt-stable:
+	ginkgo -v -procs=2 --progress --fail-fast fvt/predictor fvt/scaleToZero fvt/storage --timeout=50m
 
 # Command to regenerate the grpc go files from the proto files
 fvt-protoc:
@@ -180,7 +182,7 @@ before-pr: fmt test
 	./opendatahub/scripts/gen_odh_modelmesh_manifests.sh
 
 repeat-fvt:
-	./opendatahub/scripts/repeat_fvt.sh ${NAMESPACE} ${CONTROLLERNAMESPACE} ${NAMESPACESCOPEMODE}
+	./opendatahub/scripts/repeat_fvt.sh ${NAMESPACE} ${CONTROLLERNAMESPACE} ${NAMESPACESCOPEMODE} ${STABLE_MANIFESTS}
 
 # Openshift CI
 ## Upstream
@@ -212,20 +214,29 @@ endif
 ifdef CONTROLLERNAMESPACE
 	$(eval extra_options += --ctrl-namespace ${CONTROLLERNAMESPACE}) 
 endif
+ifdef STABLE_MANIFESTS
+	$(eval extra_options += --stable-manifests) 
+endif
 	./opendatahub/scripts/deploy_fvt.sh --namespace ${NAMESPACE} ${extra_options}
 
 deploy-mm-for-odh:
 ifdef CUSTOM_IMG
 	$(eval deploy_mm_extra_options += --image ${CUSTOM_IMG}) 
 endif
+ifdef REPO_URI
+	$(eval deploy_mm_extra_options += --repo-uri ${REPO_URI}) 
+endif
 ifdef TAG
 	$(eval deploy_mm_extra_options += --tag ${TAG}) 
 endif
-ifdef USER
-	$(eval deploy_mm_extra_options += --user ${USER}) 
+ifdef MM_USER
+	$(eval deploy_mm_extra_options += --user ${MM_USER}) 
 endif
 ifdef BRANCH
 	$(eval deploy_mm_extra_options += --branch ${BRANCH}) 
+endif
+ifdef STABLE_MANIFESTS
+	$(eval deploy_mm_extra_options += --stable-manifests) 
 endif
 ifdef OP_KFDEF
 	$(eval deploy_mm_extra_options += --operator) 
