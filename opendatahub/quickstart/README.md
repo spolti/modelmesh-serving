@@ -1,28 +1,30 @@
-# Quick Start 
+# Overview of the OpenDataHub's ModelServing Quick Starts
 
-This documentation aims to assist you in utilizing OpenDataHub's ModelServing effectively. It focuses on explaining new features introduced in the OpenDataHub modelmesh or odh-model-controller and provides relevant examples to enhance comprehension.
+The purpose of these quick starts is help you learn how to use OpenDataHub's ModelServing. They describe features in the OpenDataHub ModelMesh or odh-model-controller and provide relevant examples.
 
-Please note that while these documents have been verified for accuracy at the time of their creation, there is a possibility that manifests or scripts may become outdated and not function as intended over time.
+**Note:** These quick starts have been verified for accuracy at the time of their creation, but the manifests or scripts might become outdated and not function as originally intended.
 
-Our objective is to provide comprehensive and professional guidance to ensure seamless utilization of OpenDataHub's ModelServing.
+## List of quick starts
 
-The folder structure for the Quickstart is as follows:
+- [Sample Model Deployment](./basic/README.md)
+- [Sample Model Deployment and Autoscaler](./hpa/README.md)
+- [Sample Model Deployment and Persistent Volume Claim](./pvc/README.md) 
+
+## Quick start files
+
+Each quick start folder contains the following files:
 ~~~
-|-- basic
-     |-- deploy.sh   # Script to deploy ODH Modelmesh and Quickstart objects
-     |-- clean.sh    # Script to delete all Quickstart objects
-     |-- README.md   # Documentation providing an explanation of the Quickstart
+|-- deploy.sh   # Script to deploy the OpenDataHub ModelMesh and all quick start objects
+|-- clean.sh    # Script to delete all quick start objects
+|-- README.md   # Documentation that describes how to run the quick start
 ~~~
 
-## Requirement
+## Requirements for running the quick starts
+
 - OpenShift Cluster 4.11+
 - Default StorageClass
 - OpenShift CLI 4.11+
-- At least 8 vCPU and 16 GB memory. For more details, please see [here](../docs/get-started-odh-modelserving.md).
-- User have cluster-admin role.
+- At least 8 vCPU and 16 GB memory. For more details, see [Getting Started with ODH ModelMesh Serving](../docs/get-started-odh-modelserving.md).
+- You must have `cluster-admin` access to the OpenShift cluster.
 
-## Quick Start List
 
-- [Sample Model Deployment](./basic/README.md)
-- [Autoscaler Feature](./hpa/README.md)
-- [PVC Feature](./pvc/README.md) 
