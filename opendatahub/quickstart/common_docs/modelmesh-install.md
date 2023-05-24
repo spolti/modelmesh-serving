@@ -19,7 +19,7 @@ cd modelmesh-serving
 ~~~
 source ../env.sh
 
-cd opendatahub/quickstart/basic
+cd opendatahub/quickstart/$QUICK_START_FOLDER # (for example, cd opendatahub/quickstart/basic)
 
 ./deploy.sh
 ~~~
@@ -61,7 +61,7 @@ NAME                              READY   STATUS    RESTARTS   AGE
 nfs-provisioner-f7c7b56bc-c425b   1/1     Running   0          60s
 ~~~
 
-3. View ModelMesh-Serving pods:
+3. View ModelMesh Runtime pods:
 
 ~~~
 $ oc get pod -n modelmesh-serving

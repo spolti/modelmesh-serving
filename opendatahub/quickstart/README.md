@@ -8,7 +8,7 @@ The purpose of these quick starts is help you learn how to use OpenDataHub's Mod
 
 - [Sample Model Deployment](./basic/README.md)
 - [Sample Model Deployment and Autoscaler](./hpa/README.md)
-- [Sample Model Deployment and Persistent Volume Claim](./pvc/README.md) 
+- [Sample Model Deployment by using a Persistent Volume Claim](./pvc/README.md) 
 
 ## Quick start files
 

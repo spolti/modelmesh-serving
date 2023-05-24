@@ -4,7 +4,7 @@ The provided deploy script allows you to quickly run OpenDataHub ModelMesh Servi
 
 ## Prerequisites
 
-- You have `cluster-admin` or `dedicated-admin` access to an OpenShift cluster.
+- You have `cluster-admin` access to an OpenShift cluster.
 
 - You have installed the **OpenShift CLI** as described in [Installing the OpenShift CLI by downloading the binary](https://docs.openshift.com/container-platform/4.11/cli_reference/openshift_cli/getting-started-cli.html#cli-installing-cli_cli-developer-commands).
 

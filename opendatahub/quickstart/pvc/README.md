@@ -1,4 +1,4 @@
-# Quick Start - Sample Model Deployment and Persistent Volume Claim
+# Quick Start - Sample Model Deployment by using a Persistent Volume Claim
 
 Welcome to the quick start for deploying the OpenDataHub ModelServing component along with NFS Provisioner, Minio, and a sample Persistent Volume Claim (PVC). Additionally, this quick start deploys a sample model with an inference service so that you can test OpenDataHub ModelServing.
 
