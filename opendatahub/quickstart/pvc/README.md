@@ -1,22 +1,12 @@
-# Quick Start Guide - PVC Feature
+# Quick Start - Sample Model Deployment by using a Persistent Volume Claim
 
-This Quick Start Guide provides instructions for deploying the OpenDataHub Modelserving component along with NFS Provisioner, Minio, and a sample PVC. Additionally, it automatically deploys a sample model and allows you to test OpenDataHub Modelserving using its inference service.
+Welcome to the quick start for deploying the OpenDataHub ModelServing component along with NFS Provisioner, Minio, and a sample Persistent Volume Claim (PVC). Additionally, this quick start deploys a sample model with an inference service so that you can test OpenDataHub ModelServing.
 
-## Prerequisites
+The `deploy.sh` script deploys a sample model and includes an inference service. 
 
-You can check prerequisites from [this doc](../README.md)
+There are two inference service manifest YAML files that this quick start uses to specify a model path: `storageUri` or `storagePath`
 
-## Install OpenDataHub ModelServing
-
-Please refer to [this doc](../docs/modelmesh-install.md)
-
-## Deploy a Sample Model from PVC
-
-The `deploy.sh` also deployed a sample model so you don't need to create additional inference service. However, to help you understand, here's a brief description of the inference service manifests yaml.
-
-These are the yaml files that quick start used. There are 2 ways to specify a model path: `storageUri`, `storeagePath`
-
-- **storeagePath**
+- **storagePath**
 ~~~
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
@@ -37,7 +27,7 @@ spec:
         path: sklearn/mnist-svm.joblib
 ~~~
 
-- **storeageUri**
+- **storageUri**
 ~~~
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
@@ -54,9 +44,20 @@ spec:
       storageUri: pvc://model-pvc/sklearn/mnist-svm.joblib
 ~~~
 
-### ModelMesh configuration to attach PVC
+## Prerequisites
 
-Modelmesh provide a parameter to a allow runtime pod to attach PVC. `deploy.sh` already created the following configmap in `opendatahub namespace`
+- Verify that you meet the requirements for running the quick starts listed in [Overview of the OpenDataHub's ModelServing Quick Starts](../README.md).
+- Install OpenDataHub ModelServing as described in [Installing OpenDataHub ModelServing](../common_docs/modelmesh-install.md).
+- Verify that Minio exists in the same namespace as the OpenDataHub ModelServing instance.
+
+## Deploy a Sample Model from PVC
+
+1. Deploy the sample model:
+~~~
+./deploy.sh
+~~~
+
+The `deploy.sh` script creates the following configmap in the `opendatahub` namespace. The configmap enables the ModelMesh `allowAnyPVC` parameter that allows a runtime pod to attach to any available PVC.:
 ~~~
 apiVersion: v1
 kind: ConfigMap
@@ -67,15 +68,15 @@ data:
     allowAnyPVC: true
 ~~~
 
-
-### How to check model deployment status
-Please refer to [this doc](../basic/README.md#how-to-check-model-deployment-status)
+2. [Check the model deployment status](../basic/README.md#check-model-deployment-status).
 
 ## Perform an inference request
 
-Now that a model is loaded and available, you can then perform inference. OpenDataHub ModelServing has another controller `odh-model-controller` that is responsible for creating OpenShift Route for the model. You can manage the feature with the annotation `enable-route: "true"` in the ServingRuntime. Plus, the controller also manages authentication with the annotation  `enable-auth: "true"` in the ServingRuntime. (By default, both features are disabled but for this quick start, `enable-route` was set to `true`)
+After the model has deployed, you can perform inference requests. OpenDataHub ModelServing includes the `odh-model-controller` controller that is responsible for creating an OpenShift Route for the model and for authentication. These features are set with the `enable-route` and `enable-auth` ServingRuntime annotations. By default, both features are disabled (the annotations are set to `false`), but for this quick start, `enable-route` is set to `true`.
 
-**Curl Test wit no authentication enabled**
+The following `curl` examples demonstrate how to perform inference requests.
+
+**Curl test without authentication enabled**
 
 - *Model Name=isvc-pvc-storage-path*
   ~~~
@@ -97,7 +98,7 @@ Now that a model is loaded and available, you can then perform inference. OpenDa
   curl   --silent --location --fail --show-error --insecure https://${HOST_URL}${HOST_PATH}/infer -d  @${COMMON_MANIFESTS_DIR}/input-sklean.json
   ~~~
 
-**gRPC Curl Test wit no authentication enabled**
+**gRPC Curl test without authentication enabled**
 
 - *Model Name=isvc-pvc-storage-path*
   ~~~
@@ -134,14 +135,11 @@ Now that a model is loaded and available, you can then perform inference. OpenDa
 
 ## Cleanup
 
-Please refer to [this doc](../docs/modelmesh-cleanup.md)
-
+Follow the steps in [Cleaning up an OpenDataHub ModelServing installation](../common_docs/modelmesh-cleanup.md).
 
 ## Tip
 
 **Copy a sample model into PVC**
-
-It requires Minio exist in the same namespace.
 
 ~~~
 cat <<EOF|oc create -f -
