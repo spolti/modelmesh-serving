@@ -42,7 +42,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     GOARCH=${TARGETARCH:-amd64} \
     CGO_ENABLED=0 \
     GO111MODULE=on \
-    go build -a -o manager main.go
+    go build -a -o /workspace/manager main.go
 
 ###############################################################################
 # Stage 2: Copy build assets to create the smallest final runtime image

@@ -20,8 +20,8 @@ FROM registry.access.redhat.com/ubi8/go-toolset:1.19
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 # don't provide "default" values (e.g. 'ARG TARGETARCH=amd64') for non-buildx environments,
 # see https://github.com/docker/buildx/issues/510
-ARG TARGETOS
-ARG TARGETARCH
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
     
 ARG OPENSHIFT_VERSION=4.12
 ARG KUSTOMIZE_VERSION=4.5.2
@@ -31,22 +31,21 @@ ARG CONTROLLER_GEN_VERSION=v0.11.4
 ENV PATH=/usr/local/go/bin:$PATH:/usr/local/kubebuilder/bin:
 
 USER root
-ENV HOME=/root
+ENV HOME=/go
 
-WORKDIR /workspace
+WORKDIR /go/src/github.com/opendatahub-io/modelmesh-serving/
 
 # Install build and dev tools
-RUN --mount=type=cache,target=/root/.cache/dnf:rw \
-    dnf install --setopt=cachedir=/root/.cache/dnf -y --nodocs \
+RUN --mount=type=cache,target=${HOME}/.cache/dnf:rw \
+    dnf install --setopt=cachedir=${HOME}/.cache/dnf -y --nodocs \
        python3 \
        python3-pip \
        nodejs \
-       jq \
-    && true
+       jq 
 
 # Install pre-commit
-ENV PIP_CACHE_DIR=/root/.cache/pip
-RUN --mount=type=cache,target=/root/.cache/pip \
+ENV PIP_CACHE_DIR=${HOME}/.cache/pip
+RUN --mount=type=cache,target=${HOME}/.cache/pip \
     pip3 install pre-commit
 
 # First download and extract older dist of kubebuilder which includes required etcd, kube-apiserver and kubectl binaries
@@ -86,10 +85,9 @@ RUN  true \
 COPY .pre-commit-config.yaml go.mod go.sum ./
 
 # Download and initialize the pre-commit environments before copying the source so they will be cached
-RUN true\
+RUN true \
     && git init \
     && pre-commit install-hooks \
-    && rm -rf .git \
     && true
 
 # Cache dependencies before copying and building sources so that source changes
@@ -97,7 +95,8 @@ RUN true\
 RUN go mod download
 
 # Export the Go binary path for controller-gen and ginkgo CLIs
-ENV PATH $HOME/go/bin:$PATH
+ENV PATH=/go/bin:$HOME/go/bin:$PATH
+RUN chmod -R 777 /go
 
 # Install controller-gen to generate util code and Kubernetes YAMLs for API changes
 RUN true \
@@ -112,7 +111,7 @@ RUN true \
     && true
 
 # For GitHub Action 'lint', work around error "detected dubious ownership in repository at '/workspace'"
-RUN git config --system --add safe.directory /workspace
+RUN git config --system --add safe.directory /go/src/github.com/opendatahub-io/modelmesh-serving
 
 # The ubi/go-toolset image doesn't define ENTRYPOINT or CMD, but we need it to run 'make develop'
 CMD /bin/bash
