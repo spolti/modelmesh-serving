@@ -1,7 +1,7 @@
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
-  name: example-sklearn-isvc
+  name: isvc-https
   annotations:
     serving.kserve.io/deploymentMode: ModelMesh
 spec:
@@ -9,7 +9,4 @@ spec:
     model:
       modelFormat:
         name: sklearn
-      runtime: mlserver-0.x
-      storage:
-        key: localMinIO
-        path: sklearn/mnist-svm.joblib
+      storageUri: "https://github.com/kserve/modelmesh-minio-examples/blob/main/sklearn/mnist-svm.joblib?raw=true"
