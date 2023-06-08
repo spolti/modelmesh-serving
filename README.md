@@ -1,12 +1,10 @@
-[![Build](https://github.com/kserve/modelmesh-serving/actions/workflows/build.yml/badge.svg)](https://github.com/kserve/modelmesh-serving/actions/workflows/build.yml)
-
 # ModelMesh Serving
 
 ModelMesh Serving is the Controller for managing ModelMesh, a general-purpose model serving management/routing layer.
 
 ## Getting Started
 
-To quickly get started with ModelMesh Serving, check out the [Quick Start Guide](./docs/quickstart.md).
+To quickly get started with ModelMesh Serving, check out the [Quick Start Guide](./opendatahub/quickstart/basic).
 
 For help, please open an issue in this repository.
 
