@@ -22,6 +22,7 @@ manifests are the part that deploys the components required for fvt (functional 
 The scripts in this folder help you run fvt tests or compare odh manifests. However, it is not recommended to use these scripts directly without familiarizing yourself with them. [This doc has make examples](../docs/makefile_-cheatsheet.md) of using these scripts in a makefile here.
 
 - [env.sh](./env.sh)
+
   - This script includes sharable environmental variables such as `SCRIPT_DIR`
 
 - [utils.sh](./utils.sh)
@@ -46,12 +47,9 @@ The scripts in this folder help you run fvt tests or compare odh manifests. Howe
 
 - [repeat_fvt.sh](./repeat_fvt.sh)
   - Sometimes an fvt test fails for no reason, and to restart it, you have to recreate the test cluster, which can take over an hour. Therefore, retrying a few fvt tests in a test cluster once created is a good way to save time. This script allows you to retry a total of 5 times.
-  
 - [cleanup.sh](./cleanup.sh)
   - If you are running an fvt test with your cluster, you will want to cleanly delete the objects created by the test and run a fresh test. This script will help you delete the objects related to the fvt test from your cluster.
-  
 - [gen_odh_model_manifests.sh](./gen_odh_model_manifests.sh)
   - This script creates new odh-manifests based on the manifests in the main branch of odh-model-controller and compares them to see if they are the same or different from the existing ones. If they are different, you need to update the manifests in the opendatahub/odh-manifest/model-mesh folder using the diff command. After updating, you need to validate the new manifests with fvt test.
-  
 - [gen_odh_modelmesh_manifests.sh](./gen_odh_modelmesh_manifests.sh)
   - This script creates new odh-manifests based on the manifests in the main branch of modelmesh-serving and compares them to see if they are the same or different from the existing ones. If they are different, you need to update the manifests in the opendatahub/odh-manifest/model-mesh folder using the diff command. After updating, you need to validate the new manifests with fvt test.
