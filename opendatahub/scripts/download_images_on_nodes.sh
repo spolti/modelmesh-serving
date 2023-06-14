@@ -52,6 +52,12 @@ if [[ z${img_name} != z ]]; then
       info ".. rest-proxy image is set"
       export REST_PROXY=${img_url}
       ;;
+    odh-modelmesh-controller)
+      info ".. odh-modelmesh-controller image is set"
+      ;;
+    odh-model-controller)
+      info ".. odh-model-controller image is set"
+      ;;
     *)
       echo "No components found"
       exit 1
