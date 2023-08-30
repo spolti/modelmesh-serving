@@ -16,7 +16,7 @@ oc delete pod -l control-plane=modelmesh-controller -n $ODH_NS
 wait_for_pods_ready "-l control-plane=modelmesh-controller" "$ODH_NS"
 
 # Enable Route
-oc annotate servingruntime mlserver-0.x enable-route=true enable-auth=false    
+oc annotate servingruntime $(oc get servingruntime |grep mlserver |awk '{print $1}') enable-route=true enable-auth=false
 
 # Deploy sample sklearn model from the pvc 
 # using URI
