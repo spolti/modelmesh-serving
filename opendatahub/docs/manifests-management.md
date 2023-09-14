@@ -23,7 +23,7 @@ cd modelmesh-serving
 This will deploy modelmesh controller, fvt components with [upstream manifests ](../../config).
 
 ```
-make deploy-release-dev-mode-fvt
+make deploy-release-fvt
 ```
 
 **Kustomize: odh-manifests**

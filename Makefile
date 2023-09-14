@@ -243,7 +243,7 @@ download-images:
 
 # This must use modelmesh-serving namespace because fvt has hardcoded namspace. globals.go
 # usage: NAMESPACE=modelmesh-serving make e2e-test
-e2e-test: download-images deploy-release-dev-mode-fvt repeat-fvt
+e2e-test: download-images deploy-release-fvt repeat-fvt
 
 # usage: NAMESPACE=modelmesh-serving make e2e-delete
 e2e-delete: delete
