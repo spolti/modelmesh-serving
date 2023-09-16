@@ -112,7 +112,7 @@ spec:
               value: AKIAIOSFODNN7EXAMPLE
             - name: MINIO_SECRET_KEY
               value: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          image: kserve/modelmesh-minio-dev-examples:latest
+          image: kserve/modelmesh-minio-dev-examples:v0.11.0
           name: minio
 ---
 apiVersion: v1
@@ -175,7 +175,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: "copy-pod"
-          image: kserve/modelmesh-minio-examples:latest
+          image: kserve/modelmesh-minio-dev-examples:v0.11.0
           securityContext:
             allowPrivilegeEscalation: false
           command: ["/bin/sh", "-ex", "-c"]
@@ -226,7 +226,7 @@ metadata:
 spec:
   containers:
     - name: main
-      image: ubuntu
+      image: quay.io/fedora/fedora:38
       command: ["/bin/sh", "-ec", "sleep 10000"]
       volumeMounts:
         - name: "pvc1"
