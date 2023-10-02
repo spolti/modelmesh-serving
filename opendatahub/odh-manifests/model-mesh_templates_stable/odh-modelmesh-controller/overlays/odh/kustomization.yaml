@@ -8,8 +8,5 @@ resources:
   - ./rbac/
   - ./manager
 
-commonLabels:
-  app.kubernetes.io/managed-by: modelmesh-controller
-
 configurations:
   - params.yaml
