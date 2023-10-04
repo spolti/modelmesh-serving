@@ -22,3 +22,7 @@ jobs:
         with:
           project-url: https://github.com/orgs/opendatahub-io/projects/45
           github-token: ${{ steps.app-token.outputs.token }}
+      - uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/orgs/opendatahub-io/projects/42
+          github-token: ${{ steps.app-token.outputs.token }}
