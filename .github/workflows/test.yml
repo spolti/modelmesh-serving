@@ -2,9 +2,7 @@ name: Test
 
 on:
   pull_request:
-    branches:
-      - main
-      - 'release-0.11.1'
+    branches: [master]
     paths-ignore:
       - '.github/**'
       - '.tekton/**'

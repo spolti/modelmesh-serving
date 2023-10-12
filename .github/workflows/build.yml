@@ -3,9 +3,7 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - 'release-0.11.1'
+    branches: [master]
     tags:
       - 'v*'
     paths-ignore:
