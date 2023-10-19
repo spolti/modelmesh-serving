@@ -57,6 +57,8 @@ import (
 	"github.com/kserve/modelmesh-serving/controllers"
 	"github.com/kserve/modelmesh-serving/controllers/modelmesh"
 	"github.com/kserve/modelmesh-serving/pkg/mmesh"
+
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -262,6 +264,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Setup servingruntime validating webhook
+	hookServer := mgr.GetWebhookServer()
+	servingRuntimeWebhook := &webhook.Admission{
+		Handler: &servingv1alpha1.ServingRuntimeWebhook{
+			Client: mgr.GetClient(),
+		},
+	}
+	hookServer.Register("/validate-serving-modelmesh-io-v1alpha1-servingruntime", servingRuntimeWebhook)
+
 	_, err = mmesh.InitGrpcResolver(ControllerNamespace, mgr)
 	if err != nil {
 		setupLog.Error(err, "Failed to Initialize Grpc Resolver, exit")
@@ -279,8 +290,8 @@ func main() {
 
 	enablePprof := os.Getenv(EnablePprof)
 	if enablePprof != "" {
-		// Enable PPROF 
-		setupLog.Info("Started PPROF HTTP server", "host","","port","9999")
+		// Enable PPROF
+		setupLog.Info("Started PPROF HTTP server", "host", "", "port", "9999")
 		go func() {
 			var username string
 			var password string
@@ -320,7 +331,6 @@ func main() {
 			log.Fatal(http.ListenAndServe(":9999", mux))
 		}()
 	}
-	
 	// Check if the ServiceMonitor CRD exists in the cluster
 	sm := &monitoringv1.ServiceMonitor{}
 	serviceMonitorCRDExists := true

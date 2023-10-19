@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package fvt
 
 import (
@@ -82,6 +83,7 @@ var MutualTLSConfig = map[string]interface{}{
 
 const (
 	ServingRuntimeKind         = "ServingRuntime"
+	ClusterServingRuntimeKind  = "ClusterServingRuntime"
 	PredictorKind              = "Predictor"
 	IsvcKind                   = "InferenceService"
 	ConfigMapKind              = "ConfigMap"

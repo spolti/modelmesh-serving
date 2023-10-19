@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package fvt
 
 import (
@@ -120,6 +121,11 @@ func GetMap(obj *unstructured.Unstructured, fieldPath ...string) map[string]inte
 	value, _, err := unstructured.NestedMap(obj.Object, fieldPath...)
 	Expect(err).ToNot(HaveOccurred())
 	return value
+}
+
+func SetMap(obj *unstructured.Unstructured, value map[string]interface{}, fieldPath ...string) {
+	err := unstructured.SetNestedMap(obj.Object, value, fieldPath...)
+	Expect(err).ToNot(HaveOccurred())
 }
 
 func SetString(obj *unstructured.Unstructured, value string, fieldPath ...string) {
