@@ -36,6 +36,18 @@ rules:
   - apiGroups:
       - maistra.io
     resources:
+      - servicemeshmemberrolls
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - maistra.io
+    resources:
       - servicemeshmembers
     verbs:
       - create
@@ -49,6 +61,19 @@ rules:
       - maistra.io
     resources:
       - servicemeshmembers/finalizers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - podmonitors
+      - servicemonitors
     verbs:
       - create
       - delete
@@ -82,6 +107,18 @@ rules:
       - update
       - watch
   - apiGroups:
+      - networking.k8s.io
+    resources:
+      - networkpolicies
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
       - rbac.authorization.k8s.io
     resources:
       - clusterrolebindings
@@ -98,6 +135,17 @@ rules:
       - route.openshift.io
     resources:
       - routes
+    verbs:
+      - create
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - security.istio.io
+    resources:
+      - peerauthentications
     verbs:
       - create
       - delete
@@ -145,38 +193,15 @@ rules:
       - patch
       - update
       - watch
-
-  # Needed to hand out Prometheus metrics access
-  # to SA's in Namespaces containing Model Servers
   - apiGroups:
-      - ""
+      - telemetry.istio.io
     resources:
-      - services
-      - endpoints
-      - pods
+      - telemetries
     verbs:
+      - create
+      - delete
       - get
       - list
+      - patch
+      - update
       - watch
-  - apiGroups:
-      - extensions
-    resources:
-      - ingresses
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingresses
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-    verbs:
-      - get
