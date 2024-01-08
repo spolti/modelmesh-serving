@@ -128,7 +128,6 @@ wait_downloading_images(){
     echo "Downloading required images.. please wait!"    
     for element in "${images[@]}"
     do
-     retries=$((${retries} + 1 ))
       case "$element" in
         *triton*)
             isDownloaded=$(oc describe pod -n $namespace -l app=image-downloader|grep "Successfully pulled image \"${TRITON_SERVER}\""|wc -l)

@@ -18,12 +18,17 @@ import (
 	"context"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func modelMeshEnabled(n *corev1.Namespace, controllerNamespace string) bool {
 	if v, ok := n.Labels["modelmesh-enabled"]; ok {
+		// Returns false if the namespace state is terminating even though the namespace have the 'modelmesh-enabled=true' label.
+		if n.Status.Phase == corev1.NamespaceTerminating {
+			return false
+		}
 		return v == "true"
 	}
 	return n.Name == controllerNamespace
@@ -38,7 +43,10 @@ func modelMeshEnabled2(ctx context.Context, namespace, controllerNamespace strin
 	}
 	n := &corev1.Namespace{}
 	if err := client.Get(ctx, types.NamespacedName{Name: namespace}, n); err != nil {
-		return false, err
+		if errors.IsNotFound(err) {
+			// If the namespace has already been deleted, it can not be modelmesh namespace
+			return false, nil
+		}
 	}
 	return modelMeshEnabled(n, controllerNamespace), nil
 }
