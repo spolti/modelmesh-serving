@@ -119,24 +119,40 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		namespace = req.Name
 		n := &corev1.Namespace{}
 		if err := r.Client.Get(ctx, req.NamespacedName, n); err != nil {
+			// Previously, the controller kept checking namespaces even though the namespaces do not exist anymore.
+			// As a result, a lot of misleading error messages showed up in the log
+			if k8serr.IsNotFound(err) {
+				err = nil
+			}
 			return ctrl.Result{}, err
 		}
 		if !modelMeshEnabled(n, r.ControllerDeployment.Namespace) {
 			sl := &corev1.ServiceList{}
-			err := r.List(ctx, sl, client.HasLabels{"modelmesh-service"}, client.InNamespace(namespace))
-			if err == nil {
+			//The logic is
+			// - If the namespace is not for modelmesh anymore, it will delete modelmesh Service when it exists.
+			// - If the namespace is being terminated, it does not need to delete the modelmesh Service because it will be gone with the namespace
+			if err := r.List(ctx, sl, client.HasLabels{"modelmesh-service"}, client.InNamespace(namespace)); err != nil {
+				return ctrl.Result{}, err
+			} else {
 				for i := range sl.Items {
 					s := &sl.Items[i]
-					if err2 := r.Delete(ctx, s); err2 != nil && err == nil {
-						err = err2
+					if err := r.Delete(ctx, s); err != nil {
+						return ctrl.Result{}, err
 					}
 				}
 			}
+
 			if mms := r.MMServices.Get(namespace); mms != nil {
 				mms.Disconnect()
 				r.MMServices.Delete(namespace)
+				//requeue is never expected here
+				//If the namespace is not for modelmesh anymore, it should trigger reconcileService for MMService list that manages the goroutines.
+				if _, err, _ := r.reconcileService(ctx, mms, namespace, owner); err != nil {
+					return ctrl.Result{}, err
+				}
 			}
-			return ctrl.Result{}, err
+
+			return ctrl.Result{}, nil
 		}
 		owner = n
 	} else {
@@ -222,10 +238,27 @@ func (r *ServiceReconciler) reconcileService(ctx context.Context, mms *mmesh.MMS
 		return nil, errors.New("unexpected state - MMService uninitialized"), false
 	}
 
+	if r.ClusterScope {
+		namespaceObj := &corev1.Namespace{}
+		// Get the namespace object to check label and state of the namespace
+		if err := r.Client.Get(ctx, types.NamespacedName{Name: namespace}, namespaceObj); err != nil {
+			return nil, err, false
+		}
+		// This will remove the goroutine when modelmesh is not enabled for a namespace.
+		//  - when the namespace does not have the annotation modelmesh-enabled
+		//  - when the namespace is under a Terminating state.
+		if !modelMeshEnabled(namespaceObj, r.ControllerDeployment.Namespace) {
+			r.ModelEventStream.RemoveWatchedService(serviceName, namespace)
+			r.Log.V(1).Info("Deleted Watched Service", "name", serviceName, "namespace", namespace)
+			return nil, nil, false
+		}
+	}
+
 	sl := &corev1.ServiceList{}
 	if err := r.List(ctx, sl, client.HasLabels{"modelmesh-service"}, client.InNamespace(namespace)); err != nil {
 		return nil, err, false
 	}
+
 	var s *corev1.Service
 	for i := range sl.Items {
 		ss := &sl.Items[i]
