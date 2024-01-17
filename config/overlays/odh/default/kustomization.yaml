@@ -19,3 +19,12 @@ transformers:
 
 configurations:
   - params.yaml
+
+patches:
+  # Since OpenShift serving-certificates are being used,
+  # remove CA bundle placeholders
+  - patch: |-
+      - op: remove
+        path: "/webhooks/0/clientConfig/caBundle"
+    target:
+      kind: ValidatingWebhookConfiguration
