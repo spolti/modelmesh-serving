@@ -42,3 +42,4 @@ kustomize/
 .temp_new_modelmesh_manifests
 kfctl*
 bin
+.pre-commit.log
