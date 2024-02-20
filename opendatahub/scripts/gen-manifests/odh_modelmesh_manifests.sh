@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source "$(dirname "$0")/utils.sh"
+install_binaries
+
 # Update files for Opendatahub
 echo -n ".. Comment out ClusterServingRuntime"
 sed 's+- bases/serving.kserve.io_clusterservingruntimes.yaml+# - bases/serving.kserve.io_clusterservingruntimes.yaml+g' -i ${MODELMESH_CONTROLLER_DIR}/crd/kustomization.yaml

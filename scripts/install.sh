@@ -392,7 +392,7 @@ if [[ $enable_self_signed_ca == "true" ]]; then
   info "Enabled Self Signed CA: Generate certificates and restart controller"
   
   # Delete dummy secret for webhook server
-  kubectl delete secret modelmesh-webhook-server-cert
+  kubectl delete secret modelmesh-webhook-server-cert --nofail
 
   ../scripts/self-signed-ca.sh --namespace $namespace
 fi

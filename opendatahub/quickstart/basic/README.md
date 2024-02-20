@@ -96,8 +96,8 @@ The following `curl` examples demonstrate how to perform inference requests.
 **Curl test without authentication enabled**
 
 ```
-export HOST_URL=$(oc get route example-onnx-mnist -ojsonpath='{.spec.host}' -n ${TEST_MM_NS})
-export HOST_PATH=$(oc get route example-onnx-mnist -ojsonpath='{.spec.path}' -n ${TEST_MM_NS})
+export HOST_URL=$(oc get route example-onnx-mnist -ojsonpath='{.spec.host}' -n model-serving)
+export HOST_PATH=$(oc get route example-onnx-mnist -ojsonpath='{.spec.path}' -n model-serving)
 
 curl --silent --location --fail --show-error --insecure https://${HOST_URL}${HOST_PATH}/infer -d  @${COMMON_MANIFESTS_DIR}/input-onnx.json
 
