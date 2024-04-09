@@ -20,11 +20,11 @@ success() {
   printf "${color_green}$*${color_reset}\n" 1>&2
 }
 
-images_name=(modelmesh odh-modelmesh-controller  modelmesh-runtime-adapter rest-proxy odh-model-controller)
+images_name=(modelmesh odh-modelmesh-controller modelmesh-runtime-adapter rest-proxy odh-model-controller)
 
 checkAllowedImage() {  
   local img_name=$1
-  for img in ${images_name[@]}
+  for img in "${images_name[@]}"
   do
     if [[ $img == ${img_name} ]];then    
       return 0
@@ -32,7 +32,7 @@ checkAllowedImage() {
     fi
   done
 
-  die "The image ${img} is not in allow list"
+  die "The image ${img_name} is not in allow list"
   return 1
 }
 
@@ -232,3 +232,53 @@ wait_downloading_images(){
     fi
   done
 }
+
+# install required binaries based on current architecture
+install_binaries() {
+  ARCH=$(uname -m)
+  # Replace x86_64 with amd64 if necessary
+  if [ "${ARCH}" == "x86_64" ]; then
+      ARCH="amd64"
+  fi
+  OS=$(uname | tr '[:upper:]' '[:lower:]')
+
+  info ".. Downloading binaries"
+  if [[ ! -d ${ROOT_DIR}/bin ]]; then
+    info ".. Creating a bin folder"
+    mkdir -p ${ROOT_DIR}/bin
+  fi
+
+  if type yq &> /dev/null; then
+    info "yq already installed."
+  else
+    info "Installing yq."
+    # Download and install yq
+    curl -sSLf --output /tmp/yq.tar.gz "https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_${OS}_${ARCH}.tar.gz"
+    tar xvf /tmp/yq.tar.gz -C /tmp
+    mv /tmp/yq_linux_amd64 "${ROOT_DIR}/bin/yq"
+    rm /tmp/yq.tar.gz
+  fi
+
+  KUSTOMIZE_VERSION=5.2.1
+  if type kustomize &> /dev/null; then
+    if [ "v${KUSTOMIZE_VERSION}" =  $(kustomize version) ]; then
+      info "kustomize already installed with correct version..."
+    else
+      install_kustomize "${KUSTOMIZE_VERSION}"
+    fi
+  else
+    install_kustomize "${KUSTOMIZE_VERSION}"
+  fi
+}
+
+install_kustomize() {
+  KUSTOMIZE_VERSION=$1
+  info "Installing kustomize."
+  curl -sSLf --output /tmp/kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_${OS}_${ARCH}.tar.gz
+  tar -xvf /tmp/kustomize.tar.gz -C /tmp
+  mv /tmp/kustomize  ${ROOT_DIR}/bin
+  chmod a+x  ${ROOT_DIR}/bin
+  rm /tmp/kustomize.tar.gz
+  info "installed kustomize version $(kustomize version)"
+}
+

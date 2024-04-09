@@ -1,0 +1,44 @@
+apiVersion: datasciencecluster.opendatahub.io/v1
+kind: DataScienceCluster
+metadata:
+  finalizers:
+    - datasciencecluster.opendatahub.io/finalizer
+  labels:
+    app.kubernetes.io/created-by: rhods-operator
+    app.kubernetes.io/instance: rhods
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: datasciencecluster
+    app.kubernetes.io/part-of: rhods-operator
+  name: rhods
+spec:
+  components:
+    codeflare:
+      managementState: Removed
+    dashboard:
+      managementState: Managed
+    datasciencepipelines:
+      managementState: Removed
+    kserve:
+      managementState: Removed
+      serving:
+        ingressGateway:
+          certificate:
+            type: SelfSigned
+        managementState: Managed
+        name: knative-serving
+    modelmeshserving:
+      devFlags:
+        manifests:
+          - contextDir: config
+            sourcePath: overlays/odh
+            uri: "https://github.com/opendatahub-io/modelmesh-serving/tarball/main"
+          - contextDir: config
+            sourcePath: ""
+            uri: "https://github.com/VedantMahabaleshwarkar/odh-model-controller/tarball/monitoringnsdisable_test"
+      managementState: Managed
+    ray:
+      managementState: Removed
+    trustyai:
+      managementState: Removed
+    workbenches:
+      managementState: Removed

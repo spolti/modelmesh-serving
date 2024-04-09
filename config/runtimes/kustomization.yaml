@@ -35,4 +35,4 @@ images:
     newTag: 0.7.1-cpu
 
 transformers:
-  - ../default/metadataLabelTransformer.yaml
+  - metadataLabelTransformer.yaml
