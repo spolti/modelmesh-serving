@@ -1,15 +1,15 @@
 #!/bin/bash
 
 source "$(dirname "$(realpath "$0")")/../env.sh"
-source "$OPENDATAHUB_DIR/scripts/utils.sh"
+source "${OPENDATAHUB_DIR}/../scripts/utils.sh"
 
 export DEMO_HOME=/tmp/modelmesh/hpa
 
 cd ${ROOT_DIR}
 
-# Deploy Opendatahub Modelserving 
+# Deploy Opendatahub ModelMesh Serving
 # Deploy all required components to use such as minio,images and so on
-TAG=fast CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving make deploy-mm-for-odh  make deploy-fvt-for-odh
+TAG=fast CONTROLLERNAMESPACE=opendatahub NAMESPACE=${TEST_MM_NS} make deploy-mm-for-odh deploy-fvt-for-odh
 
 # Delete default ServingRuntime 
 oc delete servingruntime --all --force

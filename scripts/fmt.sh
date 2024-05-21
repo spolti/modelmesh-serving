@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.#
 
+if [ -f .pre-commit.log ]; then
+  rm -f .pre-commit.log
+fi
+
 pre-commit run --all-files
 RETURN_CODE=$?
 
@@ -35,14 +39,19 @@ if [ $RETURN_CODE -eq 127 ]; then
     echoError 'how to set up your dev environment. This will automatically format'
     echoError 'your code when you make a new commit.'
 elif [ "$RETURN_CODE" -ne 0 ]; then
+    # cat this file for helping on identifying the root cause when some issue happens
+    if [ -f .pre-commit.log ]; then
+      cat .pre-commit.log
+    fi
     if [ "${CI}" != "true" ]; then
       echoError 'Pre-commit linter failed, but it may have automatically formatted your files.'
-      echoError 'Check your changed files and/or manually fix the errors above then stage and commit.'
+      echoError 'Check your changed files and/or manually fix the errors above.'
     else
       echoError "This test failed because your code isn't formatted and linted correctly."
-      echoError 'To format and check the linter locally, run `make fmt`. It will appear to'
-      echoError 'fail, but may automatically format some files. Stage the changed files and'
-      echoError 'manually correct any other issues before committing and building again.'
+      echoError 'To format and check the linter locally, run `make fmt` or `make run fmt`.'
+      echoError 'It will appear to fail, but may automatically format some files.'
+      echoError 'Manually correct any other issues before committing and building again.'
+      git diff -R --ws-error-highlight=all --color --exit-code
     fi
 fi
 

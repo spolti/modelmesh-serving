@@ -4,19 +4,25 @@ To quickly get started using ModelMesh Serving, here is a brief guide.
 
 <!-- Remove the following note on the `release-*` branch -->
 
-> **Note**: This document describes how to install the _latest unreleased_ version of ModelMesh for developers and early adopters. To install the most recent _stable release_, please follow the [Quick Start Guide for version 0.11.1](https://github.com/kserve/modelmesh-serving/blob/release-0.11.1/docs/quickstart.md).
+> **Note**: This document describes how to install the _latest unreleased_
+> version of ModelMesh for developers and early adopters. To install the
+> most recent _stable release_, please follow the
+> [Quick Start Guide for version 0.11.2](https://github.com/kserve/modelmesh-serving/blob/release-0.11.2/docs/quickstart.md).
 
 ## Prerequisites
 
 - A Kubernetes cluster v1.23+ with cluster administrative privileges
-- [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) and [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) (v4.0+)
-- At least 4 vCPU and 8 GB memory. For more details, please see [here](install/README.md#deployed-components).
+- [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) and
+  [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) (v4.0+)
+- [jq](https://jqlang.github.io/jq/download/)
+- At least 4 vCPU and 8 GB memory. For more details, please see
+  [here](install/README.md#deployed-components).
 
 ## 1. Install ModelMesh Serving
 
 ### Clone the ModelMesh repository
 
-<!-- Replace with RELEASE="release-0.11.1" on the `release-*` branch -->
+<!-- Replace with RELEASE="release-0.12" on the `release-0.12` branch -->
 
 ```shell
 RELEASE="release-0.11.1"
@@ -87,6 +93,7 @@ Here, we deploy an SKLearn MNIST model which is served from the local MinIO cont
 
 ```shell
 kubectl apply -f - <<EOF
+---
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
@@ -109,6 +116,7 @@ using the `storageUri` field in lieu of the storage spec:
 
 ```shell
 kubectl apply -f - <<EOF
+---
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
@@ -127,7 +135,7 @@ EOF
 
 After applying this `InferenceService`, you should see that it is likely not yet ready.
 
-```
+```shell
 kubectl get isvc
 
 NAME                    URL   READY   PREV   LATEST   PREVROLLEDOUTREVISION   LATESTREADYREVISION   AGE
@@ -229,7 +237,7 @@ This should give you output like the following:
     {
       "name": "predict",
       "datatype": "INT64",
-      "shape": ["1"],
+      "shape": ["1", "1"],
       "contents": {
         "int64Contents": ["8"]
       }
@@ -264,8 +272,8 @@ This should give you a response like the following:
   "outputs": [
     {
       "name": "predict",
-      "datatype": "FP32",
-      "shape": [1],
+      "datatype": "INT64",
+      "shape": [1, 1],
       "data": [8]
     }
   ]
@@ -281,4 +289,5 @@ command from the root of the project:
 
 ```shell
 ./scripts/delete.sh --namespace modelmesh-serving
+kubectl delete namespace modelmesh-serving
 ```

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source "$(dirname "$(realpath "$0")")/../env.sh"
-source "$OPENDATAHUB_DIR/scripts/utils.sh"
+source "${OPENDATAHUB_DIR}/../scripts/utils.sh"
 
 export DEMO_HOME=/tmp/modelmesh/pvc
 
@@ -9,7 +9,7 @@ cd ${ROOT_DIR}
 
 # Deploy Opendatahub Modelserving 
 # Deploy all required components to use such as minio,images and so on
-STABLE_MANIFESTS=true CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving make deploy-mm-for-odh  make deploy-fvt-for-odh
+STABLE_MANIFESTS=true CONTROLLERNAMESPACE=opendatahub NAMESPACE=${TEST_MM_NS} make deploy-mm-for-odh deploy-fvt-for-odh
 
 oc get cm model-serving-config -n $ODH_NS || oc create -f ${COMMON_MANIFESTS_DIR}/allowAnyPvc-config.yaml -n $ODH_NS
 oc delete pod -l control-plane=modelmesh-controller -n $ODH_NS

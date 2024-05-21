@@ -1,21 +1,23 @@
 #!/bin/bash
 
 source "$(dirname "$(realpath "$0")")/../env.sh"
-source "$OPENDATAHUB_DIR/scripts/utils.sh"
+source "${OPENDATAHUB_DIR}/../scripts/utils.sh"
 
 export CURRENT_DIR=$(dirname "$(realpath "$0")")
 export DEMO_HOME=/tmp/modelmesh/basic
 
 cd ${ROOT_DIR}
 
-# Deploy Opendatahub Modelserving 
+# Opendatahub Modelserving
 # Deploy all required components to use such as minio,images and so on
-STABLE_MANIFESTS=true CONTROLLERNAMESPACE=opendatahub NAMESPACE=modelmesh-serving make deploy-mm-for-odh  make deploy-fvt-for-odh
+STABLE_MANIFESTS=true CONTROLLERNAMESPACE=opendatahub NAMESPACE=${TEST_MM_NS} make deploy-mm-for-odh deploy-fvt-for-odh
 
 # Delete default ServingRuntime 
 oc delete servingruntime --all --force
 
 ################## Custom Part ##################
+
+oc get ns ${TEST_MM_NS} || oc new-project ${TEST_MM_NS}
 
 # Create Openvino ServingRuntime has enable-route: true, enable-auth: "false"
 oc apply -f ${COMMON_MANIFESTS_DIR}/openvino-serving-runtime.yaml -n ${TEST_MM_NS}
