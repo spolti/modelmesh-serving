@@ -99,7 +99,7 @@ fi
 echo -e "\r ✓"
 
 if [[ $copy_current_config_dir == "false" ]]; then
-  if [[ ! -d ${TARGET_DIR}/odh-modelmesh-controller ]]  then
+  if [[ ! -d ${TARGET_DIR}/odh-modelmesh-controller ]]; then
       echo -n ".. Git Cloning odh-modelmesh-controller(branch: $MODELMESH_CONTROLLER_BRANCH) to ${TARGET_DIR} folder"
       git clone --quiet --branch $MODELMESH_CONTROLLER_BRANCH $MODELMESH_CONTROLLER_GIT odh-modelmesh-controller
   else

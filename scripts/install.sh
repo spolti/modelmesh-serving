@@ -25,7 +25,7 @@ dev_mode_logging=false
 quickstart=false
 fvt=false
 user_ns_array=
-namespace_scope_mode=false # change to true to run in namespace scope
+namespace_scope_mode=${NAMESPACE_SCOPE_MODE:-false}
 modelmesh_serving_image=
 default_sc_name=
 enable_self_signed_ca=false
@@ -361,6 +361,7 @@ if [[ $enable_self_signed_ca == "true" ]]; then
   rm default/kustomization.yaml.bak
 fi
 
+info "kustomize build default"
 kustomize build default | kubectl apply -f -
 
 if [[ $dev_mode_logging == "true" ]]; then
@@ -391,7 +392,7 @@ if [[ $enable_self_signed_ca == "true" ]]; then
   info "Enabled Self Signed CA: Generate certificates and restart controller"
   
   # Delete dummy secret for webhook server
-  kubectl delete secret modelmesh-webhook-server-cert
+  kubectl delete secret modelmesh-webhook-server-cert --nofail
 
   ../scripts/self-signed-ca.sh --namespace $namespace
 fi

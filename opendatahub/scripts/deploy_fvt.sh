@@ -19,10 +19,10 @@ function showHelp() {
   echo "usage: $0 [flags]"
   echo
   echo "Flags:"
-  echo "  -n, --namespace                (optional) Kubernetes namespace to deploy FVT test components to(default modelmesh-serving)."
-  echo "  -c, --ctrl-namespace           (optional) Kubernetes namespace to deploy modelmesh controller to(default modelmesh-serving)."
+  echo "  -n, --namespace                (optional) Kubernetes namespace to deploy FVT test components to (default modelmesh-serving)."
+  echo "  -c, --ctrl-namespace           (optional) Kubernetes namespace to deploy modelmesh controller to (default modelmesh-serving)."
   echo "  -i, --image                    (optional) Set custom image (default none)."
-  echo "  -p, --stable-manifests       (optional) Use stable manifests. By default, it will use the latest manifests (default false)."
+  echo "  -p, --stable-manifests         (optional) Use stable manifests. By default, it will use the latest manifests (default false)."
   echo "  -t, --tag                      (optional) Set tag fast,stable to change images quickly(default none)."
   echo "  -f, --force                    (optional) Copy fvt manifests from opendatahub/odh-manifest(default false)."
   echo
@@ -71,18 +71,8 @@ if [[ ${tag} == "stable" ]];then
   stable_manifests=true
 fi
 
-info ".. Downloading kustomize"
-if [[ ! -d ${ROOT_DIR}/bin ]]; then
-  info ".. Creating a bin folder"
-  mkdir -p ${ROOT_DIR}/bin
-fi
 
-export KUSTOMIZE_VERSION=4.5.2 
-curl -sSLf --output /tmp/kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
-tar -xvf /tmp/kustomize.tar.gz -C /tmp 
-mv /tmp/kustomize  ${ROOT_DIR}/bin
-chmod a+x  ${ROOT_DIR}/bin
-rm -v /tmp/kustomize.tar.gz
+install_binaries
 
 echo "* Start to prepare FVT test environment"
 allowedImgName=false
@@ -124,13 +114,11 @@ if [[ ! -d $MANIFESTS_DIR/runtimes ]] || [[ ${force} == "true" ]];then
   cp -R $ODH_MANIFESTS_DIR/${target_modelmesh_dir}/odh-modelmesh-controller/runtimes $MANIFESTS_DIR/.
   # Remove not supported runtimes
   pushd $MANIFESTS_DIR/runtimes
+    kustomize edit remove transformer ../default/metadataLabelTransformer.yaml
+    sed 's+ClusterServingRuntime+ServingRuntime+g' -i ./*
 
-  kustomize edit remove transformer ../default/metadataLabelTransformer.yaml
-  sed 's+ClusterServingRuntime+ServingRuntime+g' -i ./*
-  
-  openvino_img=$(cat $MANIFESTS_DIR/params.env |grep odh-openvino|cut -d= -f2)
-  sed "s+\$(odh-openvino)+${openvino_img}+g" -i ./*
-
+    openvino_img=$(cat $MANIFESTS_DIR/params.env |grep odh-openvino|cut -d= -f2)
+    sed "s+\$(odh-openvino)+${openvino_img}+g" -i ./*
   popd
 fi
 
@@ -155,30 +143,30 @@ fi
 # Deploy fvt
 info ".. Deploying fvt objects"
 pushd $MANIFESTS_DIR/fvt
-kustomize edit set namespace "$namespace"
+kustomize edit set namespace "${namespace}"
 popd
 
 kustomize build $MANIFESTS_DIR/fvt/ |oc apply -f -
 
 info ".. Waiting for dependent pods to be up ..."
-wait_for_pods_ready "-l app=minio" "$namespace"
+wait_for_pods_ready "-l app=minio" "${namespace}"
 
 # pvc initialize for fvt test.
 info ".. Waiting for FVT PVC storage to be initialized ..."
-oc wait --for=condition=complete --timeout=180s job/pvc-init -n ${namespace}
+oc wait --for=condition=complete --timeout=180s job/pvc-init -n "${namespace}"
 
 # Setup the namespace for modelmesh test
 info ".. Adding modelmesh-enabled label to namespace"
 oc label namespace ${namespace} modelmesh-enabled=true --overwrite=true
 
 info ".. Deploying servingRuntime"
-kustomize build $MANIFESTS_DIR/runtimes/ |oc apply -n ${namespace} -f -
+kustomize build $MANIFESTS_DIR/runtimes/ |oc apply -n "${namespace}" -f -
 
 info ".. Creating a rolebinding for sa 'modelmesh-seving-sa' which is managed by odh-model-controller with inferenceservice"
-oc get sa modelmesh-serving-sa -n ${namespace}  ||oc create sa modelmesh-serving-sa -n ${namespace} 
-oc get clusterrolebinding ${namespace}-modelmesh-serving-sa-auth-delegator || sed "s/%namespace%/${namespace}/g" $MANIFESTS_DIR/modelmesh-serving-sa-rolebinding.yaml | oc apply -n ${namespace} -f -
+oc get sa modelmesh-serving-sa -n "${namespace}" || oc create sa modelmesh-serving-sa -n "${namespace}"
+oc get clusterrolebinding "${namespace}"-modelmesh-serving-sa-auth-delegator || sed "s/%namespace%/${namespace}/g" $MANIFESTS_DIR/modelmesh-serving-sa-rolebinding.yaml | oc apply -n "${namespace}" -f -
 
 # Create a SA "prometheus-ns-access" becuase odh-model-controller create rolebinding "prometheus-ns-access" with the SA where namespaces have modelmesh-enabled=true label
-oc get sa prometheus-ns-access -n ${namespace}  ||oc create sa prometheus-ns-access -n ${namespace}  
+oc get sa prometheus-ns-access -n "${namespace}" || oc create sa prometheus-ns-access -n "${namespace}"
 
 success "[SUCCESS] Ready to do fvt test"

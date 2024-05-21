@@ -288,6 +288,7 @@ func (m *Deployment) addMMEnvVars(deployment *appsv1.Deployment) error {
 	}
 
 	if len(m.PayloadProcessors) > 0 {
+		// See https://github.com/kserve/modelmesh/blob/v0.11.1/src/main/java/com/ibm/watson/modelmesh/ModelMeshEnvVars.java#L26
 		if err := setEnvironmentVar(ModelMeshContainerName, "MM_PAYLOAD_PROCESSORS", m.PayloadProcessors, deployment); err != nil {
 			return err
 		}
