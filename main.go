@@ -313,7 +313,7 @@ func main() {
 			for key, value := range etcdSecret.Data {
 				if key == modelmesh.EtcdSecretKey {
 					var data map[string]json.RawMessage
-					err = json.Unmarshal(value, &data)
+					err := json.Unmarshal(value, &data)
 					if err != nil {
 						log.Fatalf("Failed to parse JSON: %v", err)
 					}
