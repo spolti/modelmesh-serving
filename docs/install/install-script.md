@@ -50,7 +50,7 @@ Start by cloning the [modelmesh-serving](https://github.com/kserve/modelmesh-ser
 <!-- Replace with RELEASE="release-0.12" on the `release-0.12` branch -->
 
 ```shell
-RELEASE="release-0.11.1"
+RELEASE="main"
 git clone -b $RELEASE --depth 1 --single-branch https://github.com/kserve/modelmesh-serving.git
 cd modelmesh-serving
 ```

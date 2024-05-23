@@ -145,21 +145,3 @@ replace (
 	// Fixes CVE-2023-45288
 	golang.org/x/net => golang.org/x/net v0.23.0
 )
-
-replace (
-	// Fixes CVE-2022-21698 and CVE-2023-45142
-	// this dependency comes from k8s.io/component-base@v0.28.4 and k8s.io/apiextensions-apiserver@v0.28.4
-	// before removing it make sure that the next version of the related k8s dependencies contains the fix
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp => go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.44.0
-	// Fixes CVE-2023-45288
-	golang.org/x/net => golang.org/x/net v0.23.0
-
-	// pin to 0.26.4 to avoid https://github.com/kubernetes-sigs/controller-runtime/issues/2302
-	k8s.io/api => k8s.io/api v0.26.4
-
-	// Fixes github.com/elazarl/goproxy Denial of Service (DoS), the dependency was removed in v0.27.0
-	// Remove below when upgrading to controller-runtime 0.15.x or apimachinery to 0.27.x
-	k8s.io/apimachinery => k8s.io/apimachinery v0.27.0
-	k8s.io/client-go => k8s.io/client-go v0.26.4
-	k8s.io/code-generator => k8s.io/code-generator v0.26.4
-)
