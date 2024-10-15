@@ -35,21 +35,18 @@ RUN GOOS=${TARGETOS:-linux} \
 ###############################################################################
 FROM registry.redhat.io/ubi8/ubi-minimal@sha256:7583ca0ea52001562bd81a961da3f75222209e6192e4e413ee226cff97dbd48c AS runtime
 
-ARG CI_CONTAINER_VERSION
 ARG USER=2000
 ARG IMAGE_VERSION
 ARG COMMIT_SHA
 
 LABEL com.redhat.component="odh-modelmesh-serving-controller-container" \
       name="managed-open-data-hub/odh-modelmesh-serving-controller-rhel8" \
-      version="${CI_CONTAINER_VERSION}" \
-      git.url="${CI_MODELMESH_SERVING_UPSTREAM_URL}" \
-      git.commit="${CI_MODELMESH_SERVING_UPSTREAM_COMMIT}" \
+      description="Manages lifecycle of ModelMesh Serving Custom Resources and associated Kubernetes resources" \
       summary="odh-modelmesh-serving-controller" \
+      maintainer="['managed-open-data-hub@redhat.com']" \
       io.openshift.expose-services="" \
       io.k8s.display-name="modelmesh-serving-controller" \
-      maintainer="['managed-open-data-hub@redhat.com']" \
-      description="Manages lifecycle of ModelMesh Serving Custom Resources and associated Kubernetes resources" \
+      io.k8s.description="modelmesh-serving-controller" \
       com.redhat.license_terms="https://www.redhat.com/licenses/Red_Hat_Standard_EULA_20191108.pdf"
 
 
