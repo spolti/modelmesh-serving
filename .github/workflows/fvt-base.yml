@@ -49,6 +49,7 @@ jobs:
           kubernetes-version: v1.32.0
           cpus: max
           memory: max
+          addons: storage-provisioner
 
       - name: Check pods
         run: |
