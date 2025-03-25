@@ -33,8 +33,6 @@ ARG CONTROLLER_GEN_VERSION=v0.11.4
 ENV PATH=/usr/local/go/bin:$PATH:/usr/local/kubebuilder/bin:
 
 USER root
-
-RUN mkdir /gos
 ENV HOME=/go
 
 WORKDIR /go/src/github.com/opendatahub-io/modelmesh-serving/
@@ -47,7 +45,7 @@ RUN --mount=type=cache,target=/root/.cache/dnf:rw \
        jq \
        python3.11 \
        python3.11-pip \
-    && alternatives --set python /usr/bin/python3.11 \
+    && alternatives --install /usr/bin/python python /usr/bin/python3.11 1 \
     && alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1 \
     && true
 
